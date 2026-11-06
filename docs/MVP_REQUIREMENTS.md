@@ -300,7 +300,7 @@ The implementation must enforce:
 - Business rules involving multiple records, such as settlement limits and group admin requirements, must be enforced in application logic with appropriate database transactions and concurrency protection.
 - Historical records must be retained when users, groups, memberships, expenses, or settlements are deactivated, archived, or soft-deleted.
 
-### 8. AuditTrail
+### 8.  AuditTrail
 - Records important actions performed across the application.
 - Stores the actor, affected record, action, and relevant changes.
 - Maintains historical information for auditing and troubleshooting.
