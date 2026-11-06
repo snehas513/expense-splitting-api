@@ -1,0 +1,13 @@
+class Group < ApplicationRecord
+  STATUS_TYPES = %w[active archived deleted].freeze
+
+  has_many :memberships
+  has_many :users, through: :memberships
+
+  has_many :expenses
+  has_many :settlements
+  has_many :invitations
+
+  validates :name, presence: true
+  validates :status, inclusion: { in: STATUS_TYPES }
+end
