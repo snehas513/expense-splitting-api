@@ -195,3 +195,13 @@ class Expenses::CreateService
 
 
 end
+
+
+{
+  payer: payer object,
+  participants: participants array,
+  amount: amount,
+  description: description,
+  expense_date: expense_date,
+  note: note
+}

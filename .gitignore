@@ -7,3 +7,4 @@ tmp/
 coverage/
 vendor/
 .bundle/
+backend/config/credentials.yml.enc
