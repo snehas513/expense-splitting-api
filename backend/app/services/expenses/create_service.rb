@@ -31,7 +31,7 @@ class Expenses::CreateService
   
   def validate
     validate_group
-
+    return unless validate_participants_type
     user_ids = [creator&.id, payer&.id, *participants.compact.map(&:id)].compact.uniq
     @active_member_ids = group.present? ? active_member_ids(user_ids) : []
 
@@ -73,7 +73,15 @@ class Expenses::CreateService
 
     return if participants.any?(&:nil?)
 
-    @errors << "Payer must be a participant" if participants.present? && participants.map(&:id).exclude?(payer.id)
+    @errors << "Payer must be a participant" if participants.map(&:id).exclude?(payer.id)
+  end
+
+  def validate_participants_type
+    unless participants.is_a?(Array)
+      @errors << "Participants must be an array"
+      return false
+    end
+    true
   end
 
   def validate_participants
@@ -109,9 +117,21 @@ class Expenses::CreateService
       return
     end
 
+    unless value.finite?
+      @errors << "Amount must be a finite number"
+      return
+    end
+
+    max_amount = BigDecimal("9999999999.99")
+
+    if value > max_amount
+      @errors << "Amount exceeds the maximum allowed value"
+      return
+    end
+
     @errors << "Amount must be greater than 0" unless value.positive?
 
-    @errors << "Amount cannot have more than two decimal places" unless value == value.round(2)
+    @errors << "Amount cannot have more than two decimal places" unless value == value.round(2)    
   end
 
   def calculate_equal_shares

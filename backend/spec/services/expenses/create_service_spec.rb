@@ -108,6 +108,15 @@ RSpec.describe Expenses::CreateService do
       end
     end
 
+    context "when participants is not an array" do
+      let(:participants) { "invalid" }
+
+      it "returns an error" do
+        expect(result[:success]).to be(false)
+        expect(result[:errors]).to include("Participants must be an array")
+      end
+    end
+
     context "when the amount cannot be divided equally among participants" do
       let!(:memberships) do
         [creator, payer, participant1, participant2].map do |user|
@@ -382,6 +391,72 @@ RSpec.describe Expenses::CreateService do
         expect(result[:errors]).to include(
           "Amount cannot have more than two decimal places"
         )
+      end
+    end
+
+    context "when amount is infinite" do
+      let!(:memberships) do
+        [creator, payer, participant1, participant2].map do |user|
+          create(:membership, group: group, user: user)
+        end
+      end
+
+      let(:amount) { Float::INFINITY }
+      
+      it "returns an error" do
+        expect(result[:success]).to be(false)
+        expect(result[:errors]).to include(
+          "Amount must be a finite number"
+        )
+      end
+    end
+
+    context "when amount is infinite" do
+      let!(:memberships) do
+        [creator, payer, participant1, participant2].map do |user|
+          create(:membership, group: group, user: user)
+        end
+      end
+
+      let(:amount) { Float::NAN }
+      
+      it "returns an error" do
+        expect(result[:success]).to be(false)
+        expect(result[:errors]).to include(
+          "Amount must be a finite number"
+        )
+      end
+    end
+
+    context "when amount exceeds maximum allowed value" do
+      let!(:memberships) do
+        [creator, payer, participant1, participant2].map do |user|
+          create(:membership, group: group, user: user)
+        end
+      end
+
+      let(:amount) { "19999999999.99" }
+      
+      it "returns an error" do
+        expect(result[:success]).to be(false)
+        expect(result[:errors]).to include(
+          "Amount exceeds the maximum allowed value"
+        )
+      end
+    end
+
+    context "when amount is the maximum valid amount" do
+      let!(:memberships) do
+        [creator, payer, participant1, participant2].map do |user|
+          create(:membership, group: group, user: user)
+        end
+      end
+
+      let(:amount) { "9999999999.99" }
+      
+      it "returns an error" do
+        expect(result[:success]).to be(true)
+        expect(result[:expense].amount).to eq(BigDecimal("9999999999.99"))
       end
     end
 
