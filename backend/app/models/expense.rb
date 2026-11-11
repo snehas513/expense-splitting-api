@@ -13,4 +13,19 @@ class Expense < ApplicationRecord
   validates :status, inclusion: { in: STATUS_TYPES }
   validates :expense_date, presence: true
   validates :amount, numericality: { greater_than: 0 }, presence: true
+  validate :expense_date_cannot_be_in_the_future
+    
+  def as_json(options = {})
+    super(options.merge(include: :expense_participants))
+  end
+
+  private
+
+  def expense_date_cannot_be_in_the_future
+    return if expense_date.blank?
+
+    if expense_date > Date.current
+      errors.add(:expense_date, "cannot be in the future")
+    end
+  end
 end

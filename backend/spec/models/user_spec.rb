@@ -24,6 +24,7 @@ RSpec.describe User, type: :model do
 
   it "is invalid without a name" do
     user = User.new(
+      name: "Alice",
       email: "alice@example.com",
       password: "password123"
     )

@@ -10,4 +10,8 @@ class Group < ApplicationRecord
 
   validates :name, presence: true
   validates :status, inclusion: { in: STATUS_TYPES }
+
+  def active?
+    status == "active"
+  end
 end

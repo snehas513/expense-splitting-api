@@ -52,4 +52,8 @@ class User < ApplicationRecord
     self.email = email.presence&.strip&.downcase
     self.pending_email = pending_email.presence&.strip&.downcase
   end
+
+  def active?
+    status == "active"
+  end
 end
