@@ -179,29 +179,5 @@ class Expenses::CreateService
       status: "active"
     ).pluck(:user_id)
   end
-
-# group, creator, payer, participants, amount, description, expense_date, note = Group.last, User.find(2), User.find(3), [User.find(3), User.find(4)], 2000, "Test", Date.current, nil
-
-# Expenses::CreateService.new(
-# group: group,
-# creator: creator,
-# payer: payer,
-# participants: participants,
-# amount: amount,
-# description: description,
-# expense_date: expense_date,
-# note: note
-# ).call
-
-
+  
 end
-
-
-{
-  payer: payer object,
-  participants: participants array,
-  amount: amount,
-  description: description,
-  expense_date: expense_date,
-  note: note
-}

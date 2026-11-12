@@ -14,9 +14,29 @@ class Expense < ApplicationRecord
   validates :expense_date, presence: true
   validates :amount, numericality: { greater_than: 0 }, presence: true
   validate :expense_date_cannot_be_in_the_future
+
+  scope :active, -> { where(status: "active") }
+  scope :recent_first, -> { order(expense_date: :desc, id: :desc) }
+  scope :for_group, -> (group_id) { where(group_id: group_id) }
+  scope :after_cursor, ->(cursor_date, cursor_id) {
+    where("expense_date < ?", cursor_date)
+      .or(
+        where("expense_date = ? AND id < ?", cursor_date, cursor_id)
+      )
+    }
     
   def as_json(options = {})
-    super(options.merge(include: :expense_participants))
+    {
+      "group": group,
+      "payer": payer,
+      "creator": creator,
+      "amount": amount,
+      "description": description,
+      "note": note,
+      "status": status,
+      "expense_date": expense_date,
+      "expense_participants": expense_participants
+    }
   end
 
   private

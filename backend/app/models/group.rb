@@ -14,4 +14,12 @@ class Group < ApplicationRecord
   def active?
     status == "active"
   end
+
+  def as_json(options = {})
+    {
+      "name": name,
+      "description": description,
+      "status": status,
+    }
+  end
 end

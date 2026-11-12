@@ -56,4 +56,12 @@ class User < ApplicationRecord
   def active?
     status == "active"
   end
+
+  def as_json(options={})
+    {
+      "name": name,
+      "email": email,
+      "status": status
+    }
+  end
 end
