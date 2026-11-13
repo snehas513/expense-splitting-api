@@ -17,9 +17,8 @@ class Group < ApplicationRecord
 
   def as_json(options = {})
     {
-      "name": name,
-      "description": description,
-      "status": status,
+      "id": id,
+      "name": name
     }
   end
 end

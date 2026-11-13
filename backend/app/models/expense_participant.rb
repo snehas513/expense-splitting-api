@@ -6,8 +6,9 @@ class ExpenseParticipant < ApplicationRecord
 
   def as_json(options={})
     {
+      "id": id,
       "user": user,
-      "share_amount": share_amount,
+      "share_amount": format("%.2f", share_amount),
     }
   end
 end

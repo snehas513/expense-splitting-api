@@ -3,8 +3,9 @@ module Api
     class ExpensesController < ApplicationController
       before_action :authenticate_user!
       before_action :set_group
-      before_action :set_payer
-      before_action :set_participants
+      before_action :authorize_group_membership, only: :index
+      before_action :set_payer, only: :create
+      before_action :set_participants, only: :create
 
       def create
         response = Expenses::CreateService.new(**expense_attributes).call
@@ -13,6 +14,15 @@ module Api
           return
         end
         render json: response, status: :created
+      end
+
+      def index
+        response = Expenses::IndexService.new(**fetch_expense_attributes).call
+        unless response[:success]
+          render json: response, status: :unprocessable_entity
+          return
+        end
+        render json: response, status: :ok
       end
 
       private
@@ -57,6 +67,26 @@ module Api
           note: params[:note]
         }
       end
+
+      def fetch_expense_attributes
+        {
+          group_id: @group.id,
+          limit: params[:limit],
+          cursor: params[:cursor]
+        }
+      end
+
+      def authorize_group_membership
+        membership = Membership.find_by(
+          user_id: current_user.id,
+          group_id: @group.id,
+          status: "active"
+        )
+        unless membership
+          return render json: { error: "Authenticated user, but no active membership" }, status: :forbidden
+        end
+      end
+
     end
   end
 end

@@ -41,7 +41,7 @@ RSpec.describe "Expenses API", type: :request do
         expect(response).to have_http_status(:created)
 
         json = JSON.parse(response.body)
-        shares = json.dig("expense", "expense_participants").pluck("share_amount")
+        shares = json.dig("expense", "participants").pluck("share_amount")
         expect(shares.sum(&:to_d)).to eq(BigDecimal(amount.to_s))
 
         expense_amount = json.dig("expense", "amount")
@@ -331,4 +331,128 @@ RSpec.describe "Expenses API", type: :request do
       end
     end
   end
+
+  describe "GET /api/v1/groups/:group_id/expenses" do
+    let(:group) { create(:group) }
+    let(:limit) { 2 }
+    let(:cursor) { nil }
+    let(:creator) { create(:user) }
+    
+    let!(:expenses) do
+      create_list(:expense, 10, group: group).each do |expense|
+        payer = expense.payer
+        participant = create(:user)
+
+        create(:expense_participant,
+          expense: expense,
+          user: payer,
+          share_amount: 600
+        )
+
+        create(:expense_participant,
+          expense: expense,
+          user: participant,
+          share_amount: 600
+        )
+      end
+    end
+
+    let(:creator_token) { JsonWebToken.encode({ user_id: creator.id }) }
+
+    context "when an authenticated group member requests expenses" do
+      let!(:membership) do
+        create(:membership, group: group, user: creator)
+      end
+
+      it "returns expenses" do
+        get "/api/v1/groups/#{group.id}/expenses?limit=#{limit}",
+        headers: { 
+          "Authorization" => "Bearer #{creator_token}"
+        },
+        as: :json
+
+        expect(response).to have_http_status(:ok)
+
+        json = JSON.parse(response.body)
+        response_expenses = json.dig("expenses")
+        has_more = json.dig("pagination", "has_more")
+        expect(response_expenses.count).to eq(2)
+        expect(has_more).to eq(true)
+        expect(response_expenses.map { |expense| expense["group"]["name"] }.uniq)
+          .to eq([group.name])
+
+        expense = response_expenses.first
+        expected_expense = expenses.find { |e| e.id == expense["id"] }
+        expect(expected_expense).to be_present
+        expect(expense["id"]).to be_present
+        expect(expense["amount"]).to eq("1200.00")
+        expect(expense["description"]).to eq("Test Description")
+        expect(expense["group"]["id"]).to eq(group.id)
+        expect(expense["payer"]).to include(
+          "id" => expected_expense.payer.id,
+          "name" => expected_expense.payer.name
+        )
+        expect(expense["creator"]).to include(
+          "id" => expected_expense.creator.id,
+          "name" => expected_expense.creator.name
+        )
+        participant_users = expense["participants"].map { |p| p["user"] }
+        expected_expense.participants.each do |user|
+          expect(participant_users).to include(
+            "id" => user.id,
+            "name" => user.name
+          )
+        end
+
+        shares = expense["participants"].pluck("share_amount")
+        expected_share = BigDecimal(expected_expense.amount.to_s) /
+                 expected_expense.expense_participants.count
+        expect(shares.sum(&:to_d)).to eq(BigDecimal(expected_expense.amount.to_s))
+        expect(shares.map(&:to_d)).to all(eq(BigDecimal(expected_share)))
+      end
+    end
+
+    context "when an authenticated user has an inactive membership" do
+      let!(:membership) do
+        create(:membership, :inactive, group: group, user: creator)
+      end
+
+      it "returns forbidden" do
+        get "/api/v1/groups/#{group.id}/expenses?limit=#{limit}",
+        headers: { 
+          "Authorization" => "Bearer #{creator_token}"
+        },
+        as: :json
+
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    context "when an authenticated user has no membership" do
+
+      it "returns forbidden" do
+        get "/api/v1/groups/#{group.id}/expenses?limit=#{limit}",
+        headers: { 
+          "Authorization" => "Bearer #{creator_token}"
+        },
+        as: :json
+
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    context "when there is no Authorization header" do
+
+      it "returns unauthorized" do
+        get "/api/v1/groups/#{group.id}/expenses?limit=#{limit}",
+        as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+
+  end
+
+  
 end

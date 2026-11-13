@@ -24,18 +24,17 @@ class Expense < ApplicationRecord
         where("expense_date = ? AND id < ?", cursor_date, cursor_id)
       )
     }
-    
-  def as_json(options = {})
+
+  def as_json(options={})
     {
+      "id": id,
       "group": group,
+      "amount": format("%.2f", amount),
+      "description": description,
+      "expense_date": expense_date.strftime("%Y-%m-%d"),
       "payer": payer,
       "creator": creator,
-      "amount": amount,
-      "description": description,
-      "note": note,
-      "status": status,
-      "expense_date": expense_date,
-      "expense_participants": expense_participants
+      "participants": expense_participants
     }
   end
 

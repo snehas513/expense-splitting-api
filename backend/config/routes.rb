@@ -11,6 +11,13 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       get "health", to: "health#index"
+      post "groups/:group_id/expenses", to: "expenses#create"
+      get "groups/:group_id/expenses", to: "expenses#index"
     end
   end
+
+  if Rails.env.test?
+    get "authentication_test", to: "authentication_test#index"
+  end
+
 end

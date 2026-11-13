@@ -1,0 +1,27 @@
+@baseUrl = http://localhost:3000
+@groupId = 1
+@token = eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJleHAiOjE3OTQ1NDczNjd9.KZB6XRtDD-Ss1T2cQ41nlk9NHWZMcbbbUxpIxlDFKgM
+
+@next_cursor = eyJleHBlbnNlX2RhdGUiOiIyMDI2LTExLTExIiwiaWQiOjIzfQ==
+
+### Create expense
+POST {{baseUrl}}/api/v1/groups/{{groupId}}/expenses
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "payer_id": 2,
+  "participant_ids": [2, 3],
+  "amount": "1500.00",
+  "description": "Dinner",
+  "expense_date": "2026-11-11",
+  "note": "Team dinner"
+}
+
+### Get group expenses
+GET http://localhost:3000/api/v1/groups/1/expenses?limit=1
+Authorization: Bearer {{token}}
+
+### Get next page
+GET http://localhost:3000/api/v1/groups/1/expenses?limit=1&cursor={{next_cursor}}
+Authorization: Bearer {{token}}

@@ -59,9 +59,8 @@ class User < ApplicationRecord
 
   def as_json(options={})
     {
-      "name": name,
-      "email": email,
-      "status": status
+      "id": id,
+      "name": name
     }
   end
 end
