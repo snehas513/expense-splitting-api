@@ -9,6 +9,18 @@ FactoryBot.define do
     status { "active" }
     expense_date { Date.current }
 
+    after(:create) do |expense|
+      create(:membership,
+        group: expense.group,
+        user: expense.payer,
+        status: "active"
+      ) unless Membership.exists?(
+        group: expense.group,
+        user: expense.payer,
+        status: "active"
+      )
+    end
+
     trait :deleted do
       status { "deleted" }
     end

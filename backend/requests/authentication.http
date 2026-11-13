@@ -1,6 +1,6 @@
 @baseUrl = http://localhost:3000
 @groupId = 1
-@token = eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJleHAiOjE3OTQ1NDczNjd9.KZB6XRtDD-Ss1T2cQ41nlk9NHWZMcbbbUxpIxlDFKgM
+@token = eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJleHAiOjE3OTQ2NTY2NjF9.X_8L45rL7goQNkmFtUeghphIvnEGQ7sWTSjwG0YeVqM
 
 @next_cursor = eyJleHBlbnNlX2RhdGUiOiIyMDI2LTExLTExIiwiaWQiOjIzfQ==
 
@@ -24,4 +24,8 @@ Authorization: Bearer {{token}}
 
 ### Get next page
 GET http://localhost:3000/api/v1/groups/1/expenses?limit=1&cursor={{next_cursor}}
+Authorization: Bearer {{token}}
+
+### Get group balances
+GET http://localhost:3000/api/v1/groups/1/balances
 Authorization: Bearer {{token}}

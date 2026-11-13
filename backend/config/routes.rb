@@ -13,6 +13,7 @@ Rails.application.routes.draw do
       get "health", to: "health#index"
       post "groups/:group_id/expenses", to: "expenses#create"
       get "groups/:group_id/expenses", to: "expenses#index"
+      get "groups/:group_id/balances", to: "balances#index"
     end
   end
 
