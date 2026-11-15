@@ -47,7 +47,7 @@ RSpec.describe Settlements::RejectService do
       end
     end
 
-    context "when the creator wants to confirm the settlement" do
+    context "when the creator wants to reject the settlement" do
       let(:result) {
         described_class.new(
           group: group,
@@ -65,7 +65,7 @@ RSpec.describe Settlements::RejectService do
       end
     end
 
-    context "when an unrelated user wants to confirm" do
+    context "when an unrelated user wants to reject" do
       let(:result) {
         described_class.new(
           group: group,

@@ -7,6 +7,9 @@ class Settlements::RejectService < Settlements::ActionService
   private
 
   def validate_action
+    validate_settlement_party(type: "Creator", user: creator)
+    validate_settlement_party(type: "Acted By", user: acted_by)
+
     validate_different_users
   end
 end

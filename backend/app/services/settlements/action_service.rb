@@ -36,9 +36,6 @@ class Settlements::ActionService
     @active_member_ids = active_member_ids(user_ids)
 
     validate_active_users
-    validate_settlement_party(type: "Creator", user: creator)
-    validate_settlement_party(type: "Acted By", user: acted_by)
-
     validate_action
   end
 

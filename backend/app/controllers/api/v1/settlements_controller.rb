@@ -5,7 +5,7 @@ module Api
       before_action :set_group
       before_action :set_sender, only: :create
       before_action :set_receiver, only: :create
-      before_action :set_settlement, only: [:confirm, :reject]
+      before_action :set_settlement, only: [:confirm, :reject, :cancel]
 
       def create
         response = Settlements::CreateService.new(**settlement_attributes).call
@@ -29,6 +29,16 @@ module Api
 
       def reject
         response = Settlements::RejectService.new(**update_settlement_attributes).call
+        
+        unless response[:success]
+          render json: response, status: :unprocessable_entity
+          return
+        end
+        render json: response, status: :ok
+      end
+
+      def cancel
+        response = Settlements::CancelService.new(**update_settlement_attributes).call
         
         unless response[:success]
           render json: response, status: :unprocessable_entity
