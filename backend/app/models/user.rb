@@ -22,6 +22,10 @@ class User < ApplicationRecord
            class_name: "Settlement",
            foreign_key: :receiver_id
 
+  has_many :created_settlements,
+           class_name: "Settlement",
+           foreign_key: :created_by_id
+
   has_many :acted_on_settlements,
            class_name: "Settlement",
            foreign_key: :acted_by_id

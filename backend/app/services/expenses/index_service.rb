@@ -1,4 +1,6 @@
 class Expenses::IndexService
+  include DateParser
+
   attr_reader :group_id, :limit, :cursor
   MAX_CURSOR_ID = 9_223_372_036_854_775_807
   DEFAULT_LIMIT = 20
@@ -144,14 +146,6 @@ class Expenses::IndexService
   def encode_cursor(expense)
     data = { expense_date: expense.expense_date, id: expense.id }
     Base64.urlsafe_encode64(JSON.generate(data))
-  end
-
-  def parse_date(date_string)
-    begin
-      Date.iso8601(date_string)
-    rescue Date::Error
-      nil
-    end
   end
 
   def fetch_expenses

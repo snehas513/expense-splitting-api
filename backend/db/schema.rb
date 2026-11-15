@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_06_103402) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_14_165600) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -140,7 +140,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_103402) do
     t.bigint "acted_by_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "created_by_id", null: false
     t.index ["acted_by_id"], name: "index_settlements_on_acted_by_id"
+    t.index ["created_by_id"], name: "index_settlements_on_created_by_id"
     t.index ["group_id"], name: "index_settlements_on_group_id"
     t.index ["receiver_id"], name: "index_settlements_on_receiver_id"
     t.index ["sender_id"], name: "index_settlements_on_sender_id"
@@ -177,6 +179,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_06_103402) do
   add_foreign_key "notifications", "users"
   add_foreign_key "settlements", "groups"
   add_foreign_key "settlements", "users", column: "acted_by_id"
+  add_foreign_key "settlements", "users", column: "created_by_id"
   add_foreign_key "settlements", "users", column: "receiver_id"
   add_foreign_key "settlements", "users", column: "sender_id"
 end

@@ -14,6 +14,7 @@ Rails.application.routes.draw do
       post "groups/:group_id/expenses", to: "expenses#create"
       get "groups/:group_id/expenses", to: "expenses#index"
       get "groups/:group_id/balances", to: "balances#index"
+      post "groups/:group_id/settlements", to: "settlements#create"
     end
   end
 

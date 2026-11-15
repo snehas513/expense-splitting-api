@@ -23,6 +23,8 @@ RSpec.describe Settlement, type: :model do
     )
   end
 
+  let(:creator) { user }
+
   let(:acted_by) { user }
 
   let(:settlement) do
@@ -30,6 +32,7 @@ RSpec.describe Settlement, type: :model do
       group: group, 
       sender: sender, 
       receiver: receiver, 
+      creator: creator,
       settlement_amount: 2000, 
       status: "pending", 
       settlement_date: Date.current, 
@@ -53,6 +56,11 @@ RSpec.describe Settlement, type: :model do
 
   it "is invalid without a receiver" do
     settlement.receiver = nil
+    expect(settlement).not_to be_valid
+  end
+
+  it "is invalid without a creator" do
+    settlement.creator = nil
     expect(settlement).not_to be_valid
   end
 
