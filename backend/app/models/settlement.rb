@@ -25,6 +25,17 @@ class Settlement < ApplicationRecord
   scope :confirmed, -> { where(status: "confirmed") }
   scope :pending, -> { where(status: "pending") }
 
+  scope :recent_first, -> { order(settlement_date: :desc, id: :desc) }
+  scope :for_group, -> (group_id) { where(group_id: group_id) }
+  scope :for_status, -> (status) { where(status: status) }
+
+  scope :after_cursor, ->(cursor_date, cursor_id) {
+    where("settlement_date < ?", cursor_date)
+      .or(
+        where("settlement_date = ? AND id < ?", cursor_date, cursor_id)
+      )
+    }
+
   def as_json(options={})
     {
       "id": id,
