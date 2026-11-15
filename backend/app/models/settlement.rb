@@ -39,4 +39,8 @@ class Settlement < ApplicationRecord
       "acted_by": acted_by
     }
   end
+
+  def pending?
+    status == "pending"
+  end
 end

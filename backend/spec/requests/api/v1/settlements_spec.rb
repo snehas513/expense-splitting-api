@@ -236,4 +236,141 @@ RSpec.describe "Settlements API", type: :request do
       end
     end
   end
+
+  describe "POST /api/v1/groups/:group_id/settlements/:id/confirm" do
+    let(:group) { create(:group) }
+
+    let(:participant_a) { create(:user) }
+    let(:participant_b) { create(:user) }
+    let(:participant_c) { create(:user) }
+
+    let(:sender) { participant_c }
+    let(:creator) { participant_c }
+    let(:receiver) { participant_a }
+    let(:acted_by) { receiver }
+
+    let(:settlement) {
+                        create(
+                        :settlement,
+                        group: group,
+                        sender: sender,
+                        receiver: receiver,
+                        creator: creator,
+                        settlement_amount: 1000
+                      )
+                    }
+
+    let(:acted_by_token) { JsonWebToken.encode({ user_id: acted_by.id }) }
+    let(:creator_by_token) { JsonWebToken.encode({ user_id: creator.id }) }
+
+    context "confirms a settlement successfully" do
+      let!(:memberships) do
+        [sender, receiver].map do |user|
+          create(:membership, group: group, user: user)
+        end
+      end
+
+      it "updates a pending settlement to confirmed" do
+        post "/api/v1/groups/#{group.id}/settlements/#{settlement.id}/confirm",
+        headers: { 
+          "Authorization" => "Bearer #{acted_by_token}"
+        },
+        as: :json
+
+        expect(response).to have_http_status(:ok)
+
+        json = JSON.parse(response.body)
+      
+        expected_settlement = json["settlement"]
+        expect(json["success"]).to be(true)
+        expect(expected_settlement["acted_by"]).to include(
+          "id" => acted_by.id,
+          "name" => acted_by.name
+        )
+        expect(expected_settlement["status"]).to eq("confirmed")
+        expect(settlement.reload.status).to eq("confirmed")
+        expect(settlement.acted_by_id).to eq(acted_by.id)
+      end
+    end
+
+    context "when the group does not exist" do
+
+      it "returns not_found" do
+
+        post "/api/v1/groups/#{-1}/settlements/#{settlement.id}/confirm",
+        headers: { 
+          "Authorization" => "Bearer #{acted_by_token}"
+        },
+        as: :json
+
+        expect(response).to have_http_status(:not_found)
+        expect(settlement.status).to eq("pending")
+        expect(settlement.acted_by).to be_nil
+      end
+    end
+
+    context "when there is no authorization header" do
+
+      it "returns unauthorized" do
+        post "/api/v1/groups/#{-1}/settlements/#{settlement.id}/confirm",
+        as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+        expect(settlement.status).to eq("pending")
+        expect(settlement.acted_by).to be_nil
+      end
+    end
+
+    context "when the settlement does not exist" do
+
+      it "returns not_found" do
+
+        post "/api/v1/groups/#{group.id}/settlements/#{-1}/confirm",
+        headers: { 
+          "Authorization" => "Bearer #{acted_by_token}"
+        },
+        as: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context "when the creator tries to confirm" do
+
+      it "returns unprocessable_entity" do
+
+        post "/api/v1/groups/#{group.id}/settlements/#{settlement.id}/confirm",
+        headers: { 
+          "Authorization" => "Bearer #{creator_by_token}"
+        },
+        as: :json
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(settlement.status).to eq("pending")
+        expect(settlement.acted_by).to be_nil
+      end
+    end
+
+    context "when an unrelated user tries to confirm" do
+      let(:participant_b_token) { JsonWebToken.encode({ user_id: participant_b.id }) }
+      let!(:memberships) do
+        [participant_b].map do |user|
+          create(:membership, group: group, user: user)
+        end
+      end
+
+      it "returns unprocessable_entity" do
+
+        post "/api/v1/groups/#{group.id}/settlements/#{settlement.id}/confirm",
+        headers: { 
+          "Authorization" => "Bearer #{participant_b_token}"
+        },
+        as: :json
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(settlement.status).to eq("pending")
+        expect(settlement.acted_by).to be_nil
+      end
+    end
+  end
 end
