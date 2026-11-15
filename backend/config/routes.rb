@@ -16,6 +16,7 @@ Rails.application.routes.draw do
       get "groups/:group_id/balances", to: "balances#index"
       post "groups/:group_id/settlements", to: "settlements#create"
       post "groups/:group_id/settlements/:id/confirm", to: "settlements#confirm"
+      post "groups/:group_id/settlements/:id/reject", to: "settlements#reject"
     end
   end
 

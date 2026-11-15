@@ -3,7 +3,7 @@
 @token = eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjozLCJleHAiOjE3OTQ4MTY5ODl9.dC-eWBgyvJgZmHtRdvcgE_w8ZO1Yyd4LCXy8xu61nKI
 @actedByToken = eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJleHAiOjE3OTQ4NDI0MDl9.dfTFqwBPtiyya_AiIIc0BMFxtacLMpIe4VPHHZUWhJM
 @next_cursor = eyJleHBlbnNlX2RhdGUiOiIyMDI2LTExLTExIiwiaWQiOjIzfQ==
-@settlementId = 3
+@settlementId = 4
 
 ### Create expense
 POST {{baseUrl}}/api/v1/groups/{{groupId}}/expenses
@@ -47,5 +47,10 @@ Content-Type: application/json
 
 ### Confirm settlement
 POST {{baseUrl}}/api/v1/groups/{{groupId}}/settlements/{{settlementId}}/confirm
+Authorization: Bearer {{actedByToken}}
+Content-Type: application/json
+
+### Reject settlement
+POST {{baseUrl}}/api/v1/groups/{{groupId}}/settlements/{{settlementId}}/reject
 Authorization: Bearer {{actedByToken}}
 Content-Type: application/json
