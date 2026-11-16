@@ -649,4 +649,155 @@ RSpec.describe "Settlements API", type: :request do
       end
     end
   end
+
+  describe "GET /api/v1/groups/:group_id/settlements" do
+    let(:group) { create(:group) }
+    let(:status) { nil }
+    let(:limit) { 2 }
+    let(:cursor) { nil }
+    let(:sender) { create(:user) }
+    let(:receiver) { create(:user) }
+    let(:creator) { sender }
+    
+    let!(:settlements) do
+      pending = create_list(:settlement, 25, group: group, sender: sender, receiver: receiver, creator: creator)
+      confirmed = create_list(:settlement, 10, group: group, sender: sender, receiver: receiver, creator: creator, status: "confirmed")
+      pending + confirmed
+    end
+
+    let(:creator_token) { JsonWebToken.encode({ user_id: creator.id }) }
+
+    context "when an authenticated group member requests settlements" do
+      let!(:membership) do
+        create(:membership, group: group, user: creator)
+      end
+
+      it "returns settlements" do
+        get "/api/v1/groups/#{group.id}/settlements?status=#{status}&limit=#{limit}",
+        headers: { 
+          "Authorization" => "Bearer #{creator_token}"
+        },
+        as: :json
+
+        expect(response).to have_http_status(:ok)
+
+        json = JSON.parse(response.body)
+        response_settlements = json.dig("settlements")
+        has_more = json.dig("pagination", "has_more")
+        expect(response_settlements.count).to eq(2)
+        expect(has_more).to eq(true)
+        expect(response_settlements.map { |settlement| settlement["group"]["name"] }.uniq)
+          .to eq([group.name])
+
+        settlement = response_settlements.first
+        expected_settlement = settlements.find { |s| s.id == settlement["id"] }
+        expect(expected_settlement).to be_present
+        expect(settlement["id"]).to be_present
+        expect(settlement["settlement_amount"]).to eq("1200.00")
+        expect(settlement["note"]).to be_nil
+        expect(settlement["group"]["id"]).to eq(group.id)
+        expect(settlement["sender"]).to include(
+          "id" => expected_settlement.sender.id,
+          "name" => expected_settlement.sender.name
+        )
+        expect(settlement["receiver"]).to include(
+          "id" => expected_settlement.receiver.id,
+          "name" => expected_settlement.receiver.name
+        )
+        expect(settlement["creator"]).to include(
+          "id" => expected_settlement.creator.id,
+          "name" => expected_settlement.creator.name
+        )
+      end
+    end
+
+    context "when an authenticated group member filters settlements by status" do
+      let(:status) { "confirmed" }
+
+      let!(:membership) do
+        create(:membership, group: group, user: creator)
+      end
+
+      it "returns settlements" do
+        get "/api/v1/groups/#{group.id}/settlements?status=#{status}&limit=#{limit}",
+        headers: { 
+          "Authorization" => "Bearer #{creator_token}"
+        },
+        as: :json
+
+        expect(response).to have_http_status(:ok)
+
+        json = JSON.parse(response.body)
+        response_settlements = json.dig("settlements")
+        has_more = json.dig("pagination", "has_more")
+        expect(response_settlements.count).to eq(2)
+        expect(has_more).to eq(true)
+        expect(response_settlements.map { |settlement| settlement["group"]["name"] }.uniq)
+          .to eq([group.name])
+
+        settlement = response_settlements.first
+        expected_settlement = settlements.find { |s| s.id == settlement["id"] }
+        expect(expected_settlement).to be_present
+        expect(settlement["id"]).to be_present
+        expect(settlement["settlement_amount"]).to eq("1200.00")
+        expect(settlement["note"]).to be_nil
+        expect(settlement["group"]["id"]).to eq(group.id)
+        expect(settlement["sender"]).to include(
+          "id" => expected_settlement.sender.id,
+          "name" => expected_settlement.sender.name
+        )
+        expect(settlement["receiver"]).to include(
+          "id" => expected_settlement.receiver.id,
+          "name" => expected_settlement.receiver.name
+        )
+        expect(settlement["creator"]).to include(
+          "id" => expected_settlement.creator.id,
+          "name" => expected_settlement.creator.name
+        )
+        expect(response_settlements).not_to be_empty
+        expect(response_settlements).to all(include("status" => "confirmed"))
+      end
+    end
+
+    context "when an authenticated user has an inactive membership" do
+      let!(:membership) do
+        create(:membership, :inactive, group: group, user: creator)
+      end
+
+      it "returns forbidden" do
+        get "/api/v1/groups/#{group.id}/settlements?status=#{status}&limit=#{limit}",
+        headers: { 
+          "Authorization" => "Bearer #{creator_token}"
+        },
+        as: :json
+
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    context "when an authenticated user has no membership" do
+
+      it "returns forbidden" do
+        get "/api/v1/groups/#{group.id}/settlements?status=#{status}&limit=#{limit}",
+        headers: { 
+          "Authorization" => "Bearer #{creator_token}"
+        },
+        as: :json
+
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    context "when there is no Authorization header" do
+
+      it "returns unauthorized" do
+        get "/api/v1/groups/#{group.id}/settlements?status=#{status}&limit=#{limit}",
+        as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+
+  end
 end

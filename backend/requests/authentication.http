@@ -59,3 +59,11 @@ Content-Type: application/json
 POST {{baseUrl}}/api/v1/groups/{{groupId}}/settlements/{{settlementId}}/cancel
 Authorization: Bearer {{token}}
 Content-Type: application/json
+
+### Get group settlements
+GET http://localhost:3000/api/v1/groups/1/settlements?status=cancelled&limit=100
+Authorization: Bearer {{token}}
+
+### Get next page
+GET http://localhost:3000/api/v1/groups/1/settlements?limit=1&cursor={{next_cursor}}
+Authorization: Bearer {{token}}

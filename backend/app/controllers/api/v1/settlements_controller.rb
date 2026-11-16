@@ -6,6 +6,7 @@ module Api
       before_action :set_sender, only: :create
       before_action :set_receiver, only: :create
       before_action :set_settlement, only: [:confirm, :reject, :cancel]
+      before_action :authorize_group_membership, only: :index
 
       def create
         response = Settlements::CreateService.new(**settlement_attributes).call
@@ -40,6 +41,15 @@ module Api
       def cancel
         response = Settlements::CancelService.new(**update_settlement_attributes).call
         
+        unless response[:success]
+          render json: response, status: :unprocessable_entity
+          return
+        end
+        render json: response, status: :ok
+      end
+
+      def index
+        response = Settlements::IndexService.new(**fetch_settlement_attributes).call
         unless response[:success]
           render json: response, status: :unprocessable_entity
           return
@@ -87,6 +97,15 @@ module Api
           group: @group,
           settlement: @settlement,
           acted_by: current_user
+        }
+      end
+
+      def fetch_settlement_attributes
+        {
+          group_id: @group.id,
+          status: params[:status],
+          limit: params[:limit],
+          cursor: params[:cursor]
         }
       end
 

@@ -4,28 +4,21 @@ RSpec.describe Settlements::IndexService do
   let(:group) { create(:group) }
   let(:limit) { 20 }
   let(:cursor) { nil }
+  let(:sender) { create(:user) }
+  let(:receiver) { create(:user) }
+  let(:creator) { sender }
+  let(:status) { nil }
+
   let!(:settlements) do
-    create_list(:settlement, 25, group: group).each do |settlement|
-      payer = expense.payer
-      participant = create(:user)
-
-      create(:expense_participant,
-        expense: expense,
-        user: payer,
-        share_amount: 600
-      )
-
-      create(:expense_participant,
-        expense: expense,
-        user: participant,
-        share_amount: 600
-      )
-    end
+    pending = create_list(:settlement, 25, group: group, sender: sender, receiver: receiver, creator: creator)
+    confirmed = create_list(:settlement, 10, group: group, sender: sender, receiver: receiver, creator: creator, status: "confirmed")
+    pending + confirmed
   end
 
   let(:result) {
     described_class.new(
       group_id: group.id, 
+      status: status,
       limit: limit, 
       cursor: cursor
     ).call
@@ -34,20 +27,49 @@ RSpec.describe Settlements::IndexService do
   describe "#call" do
     context "when all attributes are valid" do
       
-      it "list expenses" do
+      it "list settlements" do
         expect(result[:success]).to be(true)
-        expect(result[:expenses].map(&:group_id).uniq).to eq([group.id])
-        expect(result[:expenses].count).to eq(20)
-        expect(result[:expenses].pluck(:id)).to eq(result[:expenses].pluck(:id).sort.reverse)
+        expect(result[:settlements].map(&:group_id).uniq).to eq([group.id])
+        expect(result[:settlements].count).to eq(20)
+        expect(result[:settlements].pluck(:id)).to eq(result[:settlements].pluck(:id).sort.reverse)
         expect(result[:pagination][:has_more]).to be(true)
         expect(result[:pagination][:next_cursor]).to be_present
-        expected_ids = expenses.map(&:id).sort.reverse.first(20)
-        expect(result[:expenses].pluck(:id).first(20)).to eq(expected_ids)
+        expected_ids = settlements.map(&:id).sort.reverse.first(20)
+        expect(result[:settlements].pluck(:id).first(20)).to eq(expected_ids)
+        expect(settlements.count { |s| s.status == "pending" }).to eq(25)
+        expect(settlements.count { |s| s.status == "confirmed" }).to eq(10)
+      end
+    end
+
+    context "filter the settlements by status" do
+      let(:status) { "confirmed" }
+
+      it "list settlements" do
+        expect(result[:success]).to be(true)
+        expect(result[:settlements].map(&:group_id).uniq).to eq([group.id])
+        expect(result[:settlements].count).to eq(10)
+        expect(result[:settlements].pluck(:id)).to eq(result[:settlements].pluck(:id).sort.reverse)
+        expect(result[:pagination][:has_more]).to be(false)
+        expect(result[:pagination][:next_cursor]).to be_nil
+        expected_ids = settlements.select { |s| s.status == "confirmed" }.map(&:id).sort.reverse.first(10)
+        expect(result[:settlements].pluck(:id).first(10)).to eq(expected_ids)
+        expect(settlements.count { |s| s.status == "confirmed" }).to eq(10)
+      end
+    end
+
+    context "filter the settlements by invalid status" do
+      let(:status) { "deleted" }
+
+      it "returns an error" do
+        expect(result[:success]).to be(false)
+        expect(result[:errors]).to include(
+          "Status must be one of: pending, confirmed, rejected, cancelled"
+        )
       end
     end
 
     context "when fetching the next page" do
-      it "returns the remaining expenses" do
+      it "returns the remaining settlements" do
         first_result = described_class.new(
           group_id: group.id,
           limit: limit
@@ -61,34 +83,19 @@ RSpec.describe Settlements::IndexService do
       
 
         expect(second_result[:success]).to be(true)
-        expect(second_result[:expenses].count).to eq(5)
+        expect(second_result[:settlements].count).to eq(15)
         expect(second_result[:pagination][:has_more]).to be(false)
         expect(second_result[:pagination][:next_cursor]).to be_nil
 
-        first_page_ids = first_result[:expenses].pluck(:id)
-        second_page_ids = second_result[:expenses].pluck(:id)
+        first_page_ids = first_result[:settlements].pluck(:id)
+        second_page_ids = second_result[:settlements].pluck(:id)
         expect(second_page_ids & first_page_ids).to be_empty
       end
     end
 
     context "when expenses are fewer than limit records" do
-      let!(:expenses) do
-        create_list(:expense, 5, group: group).each do |expense|
-          payer = expense.payer
-          participant = create(:user)
-
-          create(:expense_participant,
-            expense: expense,
-            user: payer,
-            share_amount: 600
-          )
-
-          create(:expense_participant,
-            expense: expense,
-            user: participant,
-            share_amount: 600
-          )
-        end
+      let!(:settlements) do
+        create_list(:settlement, 5, group: group, sender: sender, receiver: receiver, creator: creator)
       end
 
       it "returns fewer than limit records" do
@@ -98,30 +105,15 @@ RSpec.describe Settlements::IndexService do
         ).call
       
         expect(result[:success]).to be(true)
-        expect(result[:expenses].count).to eq(5)
+        expect(result[:settlements].count).to eq(5)
         expect(result[:pagination][:has_more]).to be(false)
         expect(result[:pagination][:next_cursor]).to be_nil
       end
     end
 
     context "when expenses are exactly limit records" do
-      let!(:expenses) do
-        create_list(:expense, 5, group: group).each do |expense|
-          payer = expense.payer
-          participant = create(:user)
-
-          create(:expense_participant,
-            expense: expense,
-            user: payer,
-            share_amount: 600
-          )
-
-          create(:expense_participant,
-            expense: expense,
-            user: participant,
-            share_amount: 600
-          )
-        end
+      let!(:settlements) do
+        create_list(:settlement, 5, group: group, sender: sender, receiver: receiver, creator: creator)
       end
 
       let(:limit) { 5 }
@@ -133,14 +125,14 @@ RSpec.describe Settlements::IndexService do
         ).call
       
         expect(result[:success]).to be(true)
-        expect(result[:expenses].count).to eq(5)
+        expect(result[:settlements].count).to eq(5)
         expect(result[:pagination][:has_more]).to be(false)
         expect(result[:pagination][:next_cursor]).to be_nil
       end
     end
 
-    context "when there are no expenses for an active group" do
-      let!(:expenses) { nil }
+    context "when there are no settlements for an active group" do
+      let!(:settlements) { [] }
 
       it "returns an empty result" do
         result = described_class.new(
@@ -149,7 +141,7 @@ RSpec.describe Settlements::IndexService do
         ).call
       
         expect(result[:success]).to be(true)
-        expect(result[:expenses]).to be_empty
+        expect(result[:settlements]).to be_empty
         expect(result[:pagination][:has_more]).to be(false)
         expect(result[:pagination][:next_cursor]).to be_nil
       end
@@ -255,64 +247,14 @@ RSpec.describe Settlements::IndexService do
       end
     end
 
-    context "when expenses are inactive" do
-      let!(:expenses) do
-        create_list(:expense, 5, :deleted, group: group).each do |expense|
-          payer = expense.payer
-          participant = create(:user)
-
-          create(:expense_participant,
-            expense: expense,
-            user: payer,
-            share_amount: 600
-          )
-
-          create(:expense_participant,
-            expense: expense,
-            user: participant,
-            share_amount: 600
-          )
-        end
-      end
-
-      let(:limit) { 5 }
-
-      it "returns empty result" do
-        result = described_class.new(
-          group_id: group.id,
-          limit: limit
-        ).call
-      
-        expect(result[:success]).to be(true)
-        expect(result[:expenses]).to be_empty
-        expect(result[:pagination][:has_more]).to be(false)
-        expect(result[:pagination][:next_cursor]).to be_nil
-      end
-    end
-
-    context "when multiple expenses have the same expense date" do
-      let!(:expenses) do
-        create_list(:expense, 15, group: group).each do |expense|
-          payer = expense.payer
-          participant = create(:user)
-
-          create(:expense_participant,
-            expense: expense,
-            user: payer,
-            share_amount: 600
-          )
-
-          create(:expense_participant,
-            expense: expense,
-            user: participant,
-            share_amount: 600
-          )
-        end
+    context "when multiple settlements have the same settlement date" do
+      let!(:settlements) do
+        create_list(:settlement, 15, group: group, sender: sender, receiver: receiver, creator: creator)
       end
 
       let(:limit) { 10 }
 
-      it "paginates expenses correctly without skipping or duplicating records" do
+      it "paginates settlements correctly without skipping or duplicating records" do
         first_result = described_class.new(
           group_id: group.id,
           limit: limit
@@ -324,12 +266,12 @@ RSpec.describe Settlements::IndexService do
           cursor: first_result[:pagination][:next_cursor]
         ).call
       
-        first_expected_ids = expenses.map(&:id).sort.reverse.first(10)
-        expect(first_result[:expenses].pluck(:id)).to eq(first_expected_ids)
+        first_expected_ids = settlements.map(&:id).sort.reverse.first(10)
+        expect(first_result[:settlements].pluck(:id)).to eq(first_expected_ids)
 
-        second_expected_ids = expenses.map(&:id).sort.reverse.last(5)
-        expect(second_result[:expenses].count).to eq(5)
-        expect(second_result[:expenses].pluck(:id)).to eq(second_expected_ids)
+        second_expected_ids = settlements.map(&:id).sort.reverse.last(5)
+        expect(second_result[:settlements].count).to eq(5)
+        expect(second_result[:settlements].pluck(:id)).to eq(second_expected_ids)
         expect(second_result[:pagination][:has_more]).to be(false)
         expect(second_result[:pagination][:next_cursor]).to be_nil
       end
