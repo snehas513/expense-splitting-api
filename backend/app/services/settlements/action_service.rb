@@ -17,12 +17,10 @@ class Settlements::ActionService
       validate
       return { success: false, errors: @errors } unless @errors.empty?
      
-      begin
-        update_settlement
-        { success: true, settlement: settlement }
-      rescue ActiveRecord::RecordInvalid => e
-        { success: false, errors: e.record.errors.full_messages }
-      end
+      update_settlement
+      { success: true, settlement: settlement }
+    rescue ActiveRecord::RecordInvalid => e
+      { success: false, errors: e.record.errors.full_messages }
     end
   end
 

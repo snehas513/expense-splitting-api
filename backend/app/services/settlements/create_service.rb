@@ -1,14 +1,15 @@
 class Settlements::CreateService
   include DateParser
-  attr_reader :group, :sender, :receiver, :creator, :settlement_amount, :settlement_date, :note
+  attr_reader :group, :sender, :receiver, :creator, :settlement_amount, :settlement_date, :note, :allocations
   
-  def initialize(group:, sender:, receiver:, creator:, settlement_amount:, settlement_date:, note: nil)
+  def initialize(group:, sender:, receiver:, creator:, settlement_amount:, settlement_date:, allocations:, note: nil)
     @group = group
     @sender = sender
     @receiver = receiver
     @creator = creator
     @settlement_amount = settlement_amount
     @settlement_date = settlement_date
+    @allocations = allocations || []
     @note = note
     @errors = []
   end
@@ -20,12 +21,14 @@ class Settlements::CreateService
       validate
       return { success: false, errors: @errors } unless @errors.empty?
      
-      begin
+      Settlement.transaction do
         create_settlement
-        { success: true, settlement: @settlement }
-      rescue ActiveRecord::RecordInvalid => e
-        { success: false, errors: e.record.errors.full_messages }
+        create_settlement_expenses
       end
+        
+        { success: true, settlement: @settlement }
+    rescue ActiveRecord::RecordInvalid => e
+      { success: false, errors: e.record.errors.full_messages }
     end
   end
 
@@ -42,8 +45,11 @@ class Settlements::CreateService
     validate_creator
     validate_settlement_amount
     validate_settlement_date
+    validate_allocations
     return unless @errors.empty?
 
+    validate_total_allocation_amount
+    validate_allocation_amount_against_expense
     validate_available_amount
   end
 
@@ -113,7 +119,7 @@ class Settlements::CreateService
 
     begin
       value = BigDecimal(settlement_amount.to_s)
-    rescue ArgumentError
+    rescue ArgumentError, TypeError
       @errors << "Settlement Amount must be a valid number"
       return
     end
@@ -172,6 +178,99 @@ class Settlements::CreateService
     @errors << "Settlement amount exceeds the available amount" if settlement_amount > available_amount
   end
 
+  def validate_allocations
+    @validated_allocations = []
+
+    unless allocations.is_a?(Array) && allocations.present?
+      @errors << "Allocations must be a non-empty array"
+      return
+    end
+
+    expense_ids = allocations.map { |a| a[:expense_id] if a.is_a?(Hash) }
+
+    if expense_ids.compact.uniq.size != expense_ids.size
+      @errors << "Duplicate expense allocations are not allowed"
+      return
+    end
+
+    if allocations.any?(&:nil?)
+      @errors << "Allocations cannot contain nil values"
+      return
+    end
+
+    @group_expenses = group.expenses.active.index_by(&:id)
+    allocations.each do |allocation|
+      unless allocation.is_a?(Hash)
+        @errors << "Each allocation must be an object"
+        next
+      end
+
+      expense = @group_expenses[allocation[:expense_id]]
+      unless expense
+        @errors << "Allocation for expense ID #{allocation[:expense_id]} not found"
+      end
+
+      if allocation[:allocation_amount].blank?
+        @errors << "Allocation amount is required"
+        next
+      end
+
+      begin
+        value = BigDecimal(allocation[:allocation_amount].to_s)
+      rescue ArgumentError, TypeError
+        @errors << "Allocation amount for expense ID #{allocation[:expense_id]} must be a valid number"
+        next
+      end
+
+      unless value.finite?
+        @errors << "Allocation amount for expense ID #{allocation[:expense_id]} must be a finite number"
+        next
+      end
+
+      unless value.positive?
+        @errors << "Allocation amount for expense ID #{allocation[:expense_id]} must be greater than 0"
+        next
+      end
+
+      unless value == value.round(2) 
+        @errors << "Allocation amount for expense ID #{allocation[:expense_id]} cannot have more than two decimal places"
+        next 
+      end
+      @validated_allocations << {expense_id: allocation[:expense_id], allocation_amount: value}
+    end
+  end
+
+  def validate_total_allocation_amount
+    total = @validated_allocations.sum { |a| a[:allocation_amount] }
+    @errors << "Total allocations must equal settlement amount" unless total == settlement_amount
+  end
+
+  def validate_allocation_amount_against_expense
+    @validated_allocations.each do |allocation|
+      expense = @group_expenses[allocation[:expense_id]]
+      sender_share = expense.expense_participants.find_by(user_id: sender.id)&.share_amount
+
+      unless expense.paid_by_id == receiver.id
+        @errors << "Expense ID #{expense.id} was not paid by the receiver"
+        next
+      end
+
+      unless sender_share
+        @errors << "Sender is not a participant in expense ID #{expense.id}"
+        next
+      end
+
+      already_allocated = expense.settlement_expenses.joins(:settlement)
+        .where(settlements: { status: %w[pending confirmed], sender_id:  sender.id, receiver_id: receiver.id}).sum(:allocation_amount)
+
+      remaining_amount = sender_share - already_allocated
+
+      if allocation[:allocation_amount] > remaining_amount
+        @errors << "Allocation amount for expense ID #{allocation[:expense_id]} exceeds remaining amount"
+      end
+    end
+  end
+
   def create_settlement
     @settlement = group.settlements.create!(
       sender: sender,
@@ -183,5 +282,9 @@ class Settlements::CreateService
       note: note,
       acted_by: nil
     )
+  end
+
+  def create_settlement_expenses
+    @settlement.settlement_expenses.create!(@validated_allocations)
   end
 end

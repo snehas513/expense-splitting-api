@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_14_165600) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_16_115057) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -129,6 +129,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_165600) do
     t.index ["user_id"], name: "index_notifications_on_user_id"
   end
 
+  create_table "settlement_expenses", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "settlement_id", null: false
+    t.bigint "expense_id", null: false
+    t.decimal "allocation_amount", precision: 12, scale: 2, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["expense_id"], name: "index_settlement_expenses_on_expense_id"
+    t.index ["settlement_id", "expense_id"], name: "index_settlement_expenses_on_settlement_id_and_expense_id", unique: true
+    t.index ["settlement_id"], name: "index_settlement_expenses_on_settlement_id"
+    t.check_constraint "`allocation_amount` > 0", name: "check_settlement_expenses_allocation_amount_positive"
+  end
+
   create_table "settlements", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "group_id", null: false
     t.bigint "sender_id", null: false
@@ -177,6 +189,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_14_165600) do
   add_foreign_key "memberships", "groups"
   add_foreign_key "memberships", "users"
   add_foreign_key "notifications", "users"
+  add_foreign_key "settlement_expenses", "expenses"
+  add_foreign_key "settlement_expenses", "settlements"
   add_foreign_key "settlements", "groups"
   add_foreign_key "settlements", "users", column: "acted_by_id"
   add_foreign_key "settlements", "users", column: "created_by_id"

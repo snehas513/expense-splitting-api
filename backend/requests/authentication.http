@@ -39,8 +39,18 @@ Content-Type: application/json
 {
   "sender_id": 3,
   "receiver_id": 2,
-  "settlement_amount": "200.00",
+  "settlement_amount": "500.00",
   "settlement_date": "2026-11-15",
+  "allocations": [
+    {
+      "expense_id": 10,
+      "allocation_amount": "300.00"
+    },
+    {
+      "expense_id": 12,
+      "allocation_amount": "200.00"
+    }
+  ],
   "note": "November settlement"
 }
 

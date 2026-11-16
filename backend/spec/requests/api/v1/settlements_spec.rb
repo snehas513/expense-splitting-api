@@ -15,6 +15,7 @@ RSpec.describe "Settlements API", type: :request do
     let(:settlement_amount) { 100 }
     let(:settlement_date) { Date.current }
     let(:note) { "Settled ₹#{settlement_amount}" }
+    let(:allocations) { [] }
 
     let(:creator_token) { JsonWebToken.encode({ user_id: creator.id }) }
 
@@ -48,6 +49,15 @@ RSpec.describe "Settlements API", type: :request do
         end
       end
 
+      let!(:allocations) { 
+        [
+          {
+            "expense_id": expense1.id,
+            "allocation_amount": "100.00"
+          }
+        ]
+      }
+
       it "creates a pending settlement and returns its details" do
         expect {
           post "/api/v1/groups/#{group.id}/settlements",
@@ -59,6 +69,7 @@ RSpec.describe "Settlements API", type: :request do
             "receiver_id": receiver.id,
             "settlement_amount": settlement_amount,
             "settlement_date": settlement_date,
+            "allocations": allocations,
             "note": note
           },
           as: :json
@@ -67,7 +78,6 @@ RSpec.describe "Settlements API", type: :request do
         expect(response).to have_http_status(:created)
 
         json = JSON.parse(response.body)
-      
         expected_settlement = json["settlement"]
         expect(json["success"]).to be(true)
         expect(expected_settlement["settlement_amount"].to_d).to eq(BigDecimal(settlement_amount.to_s))
@@ -195,6 +205,7 @@ RSpec.describe "Settlements API", type: :request do
             "receiver_id": receiver.id,
             "settlement_amount": settlement_amount,
             "settlement_date": settlement_date,
+            "allocations": allocations,
             "note": note
           },
           as: :json

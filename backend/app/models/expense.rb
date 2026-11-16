@@ -9,6 +9,9 @@ class Expense < ApplicationRecord
            foreign_key: :created_by_id
   has_many :expense_participants
   has_many :participants, through: :expense_participants, source: :user
+  has_many :settlement_expenses, dependent: :restrict_with_error
+  has_many :settlements, through: :settlement_expenses
+
   validates :description, presence: true
   validates :status, inclusion: { in: STATUS_TYPES }
   validates :expense_date, presence: true

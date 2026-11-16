@@ -372,5 +372,58 @@ RSpec.describe Balances::IndexService do
       end
     end
 
+    context "when a confirmed settlement party is not an active group member" do
+      let(:participant_a) { create(:user) }
+      let(:participant_b) { create(:user) }
+      let(:participant_c) { create(:user) }
+      let(:participant_d) { create(:user) }
+
+      let!(:memberships) do
+        [participant_a, participant_b, participant_c].map do |user|
+          create(:membership, group: group, user: user)
+        end
+      end
+
+      let!(:expense1) { create(:expense, group: group, creator: participant_a, payer: participant_a, amount: 1500) }
+      let!(:expense2) { create(:expense, group: group, creator: participant_b, payer: participant_b, amount: 900) }
+
+      let!(:expense_participant_for_expense1) do
+        [participant_a, participant_b, participant_c].map do |user|
+          create(:expense_participant,
+            expense: expense1,
+            user: user,
+            share_amount: 500
+          )
+        end
+      end
+
+      let!(:expense_participant_for_expense2) do
+        [participant_a, participant_b, participant_c].map do |user|
+          create(:expense_participant,
+            expense: expense2,
+            user: user,
+            share_amount: 300
+          )
+        end
+      end
+
+      let!(:settlement) { 
+        create(
+          :settlement,
+          :confirmed,
+          group: group,
+          sender: participant_d,
+          receiver: participant_a,
+          creator: participant_d,
+          settlement_amount: 100
+        )
+      }
+      
+      it "returns an error" do
+        expect(result[:success]).to be(false)        
+        expect(result[:errors]).to include("Settlement parties must be active group members for settlement #{settlement.id}")
+      end
+    end
+
   end
 end

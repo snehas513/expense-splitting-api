@@ -472,7 +472,9 @@ RSpec.describe Expenses::CreateService do
           result
         }.not_to change(Expense, :count)
         expect(result[:success]).to be(false)
-        expect(ExpenseParticipant.count).to eq(0)
+        expect {
+          result
+        }.not_to change(ExpenseParticipant, :count)
       end
     end
 

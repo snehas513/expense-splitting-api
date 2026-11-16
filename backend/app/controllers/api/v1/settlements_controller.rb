@@ -74,14 +74,19 @@ module Api
       end
 
       def settlement_attributes
+        attributes = settlement_params
+
         {
           group: @group,
           sender: @sender,
           receiver: @receiver,
           creator: current_user,
-          settlement_amount: params[:settlement_amount],
-          settlement_date: params[:settlement_date],
-          note: params[:note]
+          settlement_amount: attributes["settlement_amount"],
+          settlement_date: attributes["settlement_date"],
+          allocations: (attributes["allocations"] || []).map do |allocation|
+            allocation.deep_symbolize_keys
+          end,
+          note: attributes["note"]
         }
       end
 
@@ -109,6 +114,16 @@ module Api
         }
       end
 
+      def settlement_params
+        params.permit(
+          :sender_id,
+          :receiver_id,
+          :settlement_amount,
+          :settlement_date,
+          :note,
+          allocations: [:expense_id, :allocation_amount]
+        ).to_h
+      end
     end
   end
 end

@@ -17,6 +17,9 @@ class Settlement < ApplicationRecord
             class_name: "User",
             foreign_key: :acted_by_id,
             optional: true
+  has_many :settlement_expenses, dependent: :restrict_with_error
+  has_many :expenses, through: :settlement_expenses
+
 
   validates :settlement_amount, numericality: { greater_than: 0 }, presence: true
   validates :status, inclusion: { in: STATUS_TYPES }
