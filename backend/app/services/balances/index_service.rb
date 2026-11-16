@@ -80,7 +80,21 @@ module Balances
         end
 
       end
-      
+
+      group_settlements = group.settlements.confirmed
+      group_settlements.each do |settlement|
+        unless active_member_ids.include?(settlement.sender_id) &&
+              active_member_ids.include?(settlement.receiver_id)
+          return {
+            success: false,
+            errors: ["Settlement parties must be active group members for settlement #{settlement.id}"]
+          }
+        end
+
+        balances[settlement.sender_id] += settlement.settlement_amount
+        balances[settlement.receiver_id] -= settlement.settlement_amount
+      end
+
       unless balances.values.sum(BigDecimal("0")).zero?
         return {
           success: false,
