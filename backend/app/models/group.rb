@@ -8,7 +8,7 @@ class Group < ApplicationRecord
   has_many :settlements
   has_many :invitations
 
-  validates :name, presence: true
+  validates :name, presence: true, uniqueness: true
   validates :status, inclusion: { in: STATUS_TYPES }
 
   def active?

@@ -27,7 +27,7 @@ RSpec.describe Group, type: :model do
 
   it "accepts all allowed statuses" do
     %w[active archived deleted].each do |status|
-      group = Group.new(name: "Test Group", status: status)
+      group = Group.new(name: "Test Group #{status}", status: status)
       expect(group).to be_valid
     end
   end
@@ -35,5 +35,21 @@ RSpec.describe Group, type: :model do
   it "rejects invalid status" do
     group = Group.new(name: "Test Group", status: "pending")
     expect(group).not_to be_valid
+  end
+
+  it "rejects a duplicate group name" do
+    Group.create!(name: "Test Group")
+
+    duplicate_group = Group.new(name: "Test Group")
+
+    expect(duplicate_group).not_to be_valid
+  end
+
+  it "rejects a group name that differs only by letter case" do
+    Group.create!(name: "Goa Trip")
+
+    duplicate_group = Group.new(name: "goa trip")
+
+    expect(duplicate_group).not_to be_valid
   end
 end

@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :group do
-    name { "Test Group" }
+    name { "Test Group #{SecureRandom.uuid}" }
     description {"Test Group"}
     status { "active" }
 

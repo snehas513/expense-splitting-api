@@ -19,6 +19,9 @@ Rails.application.routes.draw do
       post "groups/:group_id/settlements/:id/reject", to: "settlements#reject"
       post "groups/:group_id/settlements/:id/cancel", to: "settlements#cancel"
       get "groups/:group_id/settlements", to: "settlements#index"
+      post "groups", to: "groups#create"
+      get "groups", to: "groups#index"
+      get "groups/:group_id", to: "groups#show"
     end
   end
 
