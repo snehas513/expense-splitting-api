@@ -161,7 +161,7 @@ RSpec.describe "Groups API", type: :request do
     context "when group does not exist" do
       let!(:membership) { create(:membership, group: group, user: user) }
 
-      it "returns success" do
+      it "returns not found" do
         get "/api/v1/groups/#{-1}",
         headers: { 
           "Authorization" => "Bearer #{user_token}"
@@ -189,6 +189,84 @@ RSpec.describe "Groups API", type: :request do
 
       it "returns unauthorized" do
         get "/api/v1/groups/#{group.id}",
+          as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+    
+  end
+
+  describe "PATCH /api/v1/groups" do
+    let(:user) { create(:user) }
+    let(:group) { create(:group) }
+    let(:attributes) do
+      { "name"=> "Update Group Name", "description"=> "Update Group Description"} 
+    end
+
+    let(:user_token) { JsonWebToken.encode({ user_id: user.id }) }
+
+    context "update group name and description" do
+      let!(:membership) { create(:membership, group: group, user: user, role: "admin") }
+
+      it "returns success" do
+        patch "/api/v1/groups/#{group.id}",
+        headers: { 
+          "Authorization" => "Bearer #{user_token}"
+        },
+        params: attributes,
+        as: :json
+        expect(response).to have_http_status(:ok)
+
+        json = JSON.parse(response.body)
+        response_group = json["group"]
+        expect(response_group["id"]).to eq(group.id)
+        expect(response_group["name"]).to eq(attributes["name"])
+        expect(group.reload.description).to eq(attributes["description"])
+      end
+    end
+
+    context "update group description" do
+      let!(:membership) { create(:membership, group: group, user: user, role: "admin") }
+      let(:attributes) do
+        { "description"=> "Update Group Description"} 
+      end
+      it "returns success" do
+        patch "/api/v1/groups/#{group.id}",
+        headers: { 
+          "Authorization" => "Bearer #{user_token}"
+        },
+        params: attributes,
+        as: :json
+        expect(response).to have_http_status(:ok)
+
+        json = JSON.parse(response.body)
+        response_group = json["group"]
+        expect(response_group["id"]).to eq(group.id)
+        expect(response_group["name"]).to eq(group.name)
+        expect(group.reload.description).to eq(attributes["description"])
+      end
+    end
+
+    context "when group does not exist" do
+
+      it "returns not found" do
+        patch "/api/v1/groups/#{-1}",
+        headers: { 
+          "Authorization" => "Bearer #{user_token}"
+        },
+        params: attributes,
+        as: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context "when there is no Authorization header" do
+
+      it "returns unauthorized" do
+        patch "/api/v1/groups/#{group.id}",
+          params: attributes,
           as: :json
 
         expect(response).to have_http_status(:unauthorized)
