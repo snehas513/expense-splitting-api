@@ -23,6 +23,7 @@ Rails.application.routes.draw do
       get "groups", to: "groups#index"
       get "groups/:group_id", to: "groups#show"
       patch "groups/:group_id", to: "groups#update"
+      post "groups/:group_id/archive", to: "groups#archive"
     end
   end
 

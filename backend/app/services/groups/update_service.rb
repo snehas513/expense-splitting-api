@@ -13,7 +13,7 @@ class Groups::UpdateService
     return { success: false, errors: @errors } unless @errors.empty?
 
     fetch_group
-    return { success: false, errors: ["Group not found"] } if @group.blank?
+    return { success: false, errors: ["Group not found or you are not an active admin"] } if @group.blank?
 
     update_group
     { success: true, group: @group }

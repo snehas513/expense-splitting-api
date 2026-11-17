@@ -94,14 +94,20 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 ### Get user group details
-GET http://localhost:3000/api/v1/groups/-1
+GET {{baseUrl}}/api/v1/groups/-1
 Authorization: Bearer {{token}}
 
 ### Update user group details
-PATCH  http://localhost:3000/api/v1/groups/1
+PATCH  {{baseUrl}}/api/v1/groups/1
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "name": "G1"
 }
+
+### Archive user group
+POST  {{baseUrl}}/api/v1/groups/2/archive
+Authorization: Bearer {{token}}
+Content-Type: application/json
+

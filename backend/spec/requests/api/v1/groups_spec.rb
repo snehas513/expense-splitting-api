@@ -274,4 +274,54 @@ RSpec.describe "Groups API", type: :request do
     end
     
   end
+
+  describe "POST /api/v1/groups/:group_id/archive" do
+    let(:user) { create(:user) }
+    let(:group) { create(:group) }
+
+    let(:user_token) { JsonWebToken.encode({ user_id: user.id }) }
+
+    context "archive group" do
+      let!(:membership) { create(:membership, group: group, user: user, role: "admin") }
+
+      it "returns success" do
+        post "/api/v1/groups/#{group.id}/archive",
+        headers: { 
+          "Authorization" => "Bearer #{user_token}"
+        },
+        as: :json
+        expect(response).to have_http_status(:ok)
+
+        json = JSON.parse(response.body)
+        response_group = json["group"]
+        expect(response_group["id"]).to eq(group.id)
+        expect(group.reload.status).to eq("archived")
+        expect(group.reload.memberships.pluck(:status)).to include("inactive")
+      end
+    end
+
+    context "when group does not exist" do
+
+      it "returns not found" do
+        post "/api/v1/groups/#{-1}/archive",
+        headers: { 
+          "Authorization" => "Bearer #{user_token}"
+        },
+        as: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context "when there is no Authorization header" do
+
+      it "returns unauthorized" do
+        post "/api/v1/groups/#{group.id}/archive",
+          as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+    
+  end
 end

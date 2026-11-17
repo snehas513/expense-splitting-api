@@ -2,7 +2,7 @@ module Api
   module V1
     class GroupsController < ApplicationController
       before_action :authenticate_user!
-      before_action :set_group, only: [:show, :update]
+      before_action :set_group, only: [:show, :update, :archive]
 
       def create
         response = Groups::CreateService.new(**group_attributes).call
@@ -33,6 +33,15 @@ module Api
 
       def update
         response = Groups::UpdateService.new(**update_group_attributes).call
+        unless response[:success]
+          render json: response, status: :unprocessable_entity
+          return
+        end
+        render json: response, status: :ok
+      end
+
+      def archive
+        response = Groups::ArchiveService.new(**fetch_group_attributes).call
         unless response[:success]
           render json: response, status: :unprocessable_entity
           return
