@@ -14,6 +14,8 @@ class Invitation < ApplicationRecord
   validates :status, inclusion: {in: STATUS_TYPES }
   validates :sent_at, presence: true
 
+  scope :pending, -> { where(status: "pending") }
+
   def as_json(options={})
    {
     "id": id,

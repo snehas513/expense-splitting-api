@@ -5,6 +5,7 @@ module Api
       before_action :set_group
       before_action :set_invited_user, only: :create
       before_action :set_invitation, only: [:accept, :reject]
+      before_action :authorize_group_membership, only: :index
 
       def create
         response = Invitations::CreateService.new(**invitation_attributes).call
@@ -26,6 +27,15 @@ module Api
 
       def reject
         response = Invitations::RejectService.new(**update_attributes).call
+        unless response[:success]
+          render json: response, status: :unprocessable_entity
+          return
+        end
+        render json: response, status: :ok
+      end
+
+      def index
+        response = Invitations::IndexService.new(**fetch_invitations_attributes).call
         unless response[:success]
           render json: response, status: :unprocessable_entity
           return
@@ -56,6 +66,13 @@ module Api
 
       def set_invitation
         @invitation = @group.invitations.find_by(id: params[:id])
+      end
+
+      def fetch_invitations_attributes
+        {
+          group: @group,
+          user: current_user
+        }
       end
 
     end

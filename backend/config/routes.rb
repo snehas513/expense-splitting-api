@@ -27,6 +27,7 @@ Rails.application.routes.draw do
       post "groups/:group_id/invitations", to: "invitations#create"
       post "groups/:group_id/invitations/:id/accept", to: "invitations#accept"
       post "groups/:group_id/invitations/:id/reject", to: "invitations#reject"
+      get "groups/:group_id/invitations", to: "invitations#index"
     end
   end
 

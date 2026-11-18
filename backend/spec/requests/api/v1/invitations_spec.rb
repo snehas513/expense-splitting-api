@@ -214,11 +214,79 @@ RSpec.describe "Invitations API", type: :request do
 
       it "returns unauthorized" do
         invitations_before = Invitation.count
-        post "/api/v1/groups/#{group.id}/invitations/#{invitation.id}/accept",
+        post "/api/v1/groups/#{group.id}/invitations/#{invitation.id}/reject",
           as: :json
 
         expect(response).to have_http_status(:unauthorized)
         expect(Invitation.count).to eq(invitations_before)
+      end
+    end
+  end
+
+  describe "GET /api/v1/groups/:group_id/invitations" do
+    let(:invited_by) { create(:user) }
+    let(:group) { create(:group) }
+
+    let(:user_token) { JsonWebToken.encode({ user_id: invited_by.id }) }
+
+    context "when the admin lists pending invitations" do
+      let!(:membership) { create(:membership, group: group, user: invited_by, role: "admin") }
+
+      let!(:invitation) do
+        create_list(:invitation, 15, group: group, invited_by: invited_by)
+      end
+
+      it "returns success" do
+        get "/api/v1/groups/#{group.id}/invitations",
+          headers: { 
+            "Authorization" => "Bearer #{user_token}"
+          },
+          as: :json
+        expect(response).to have_http_status(:ok)
+        json = JSON.parse(response.body)
+        expect(json["success"]).to eq(true)
+
+        expected_invitations = json["invitations"]
+        expect(expected_invitations.count).to eq(15)
+        expect(expected_invitations.pluck("status").uniq).to eq(["pending"])
+      end
+    end
+
+    context "when group does not exist" do
+
+      it "returns not found" do
+        get "/api/v1/groups/#{-1}/invitations",
+          headers: { 
+            "Authorization" => "Bearer #{user_token}"
+          },
+          as: :json
+        
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context "when there is no Authorization header" do
+
+      it "returns unauthorized" do
+        get "/api/v1/groups/#{group.id}/invitations",
+          as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context "when an authenticated user has no membership" do
+
+      it "returns forbidden" do
+        get "/api/v1/groups/#{group.id}/invitations",
+        headers: { 
+          "Authorization" => "Bearer #{user_token}"
+        },
+        as: :json
+
+        expect(response).to have_http_status(:forbidden)
+        json = JSON.parse(response.body)
+        expect(json["error"]).to eq("Authenticated user, but no active membership")
       end
     end
   end
