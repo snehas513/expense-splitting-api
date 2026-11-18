@@ -52,7 +52,7 @@ RSpec.describe Memberships::IndexService do
     context "when the group is missing" do
       let(:group) { nil }
 
-      it "lists pending invitations" do
+      it "returns an error" do
         expect(result[:success]).to be(false)
         expect(result[:errors]).to include("Group is required")
       end
@@ -61,7 +61,7 @@ RSpec.describe Memberships::IndexService do
     context "when the group is archived" do
       let(:group) { create(:group, :archived) }
 
-      it "lists pending invitations" do
+      it "returns an error" do
         expect(result[:success]).to be(false)
         expect(result[:errors]).to include("Group must be active")
       end
