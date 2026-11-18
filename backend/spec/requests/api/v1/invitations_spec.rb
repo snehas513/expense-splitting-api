@@ -290,4 +290,44 @@ RSpec.describe "Invitations API", type: :request do
       end
     end
   end
+
+  describe "GET /api/v1/invitations" do
+    let(:user) { create(:user) }
+
+    let(:user_token) { JsonWebToken.encode({ user_id: user.id }) }
+
+    context "when the user lists pending invitations" do
+      let!(:invitation) do
+        rejected = create_list(:invitation, 10, invited_user: user, status: "rejected")
+        pending = create_list(:invitation, 15, invited_user: user)
+        rejected + pending
+      end
+
+      it "returns success" do
+        get "/api/v1/invitations",
+          headers: { 
+            "Authorization" => "Bearer #{user_token}"
+          },
+          as: :json
+        expect(response).to have_http_status(:ok)
+        json = JSON.parse(response.body)
+        expect(json["success"]).to eq(true)
+
+        expected_invitations = json["invitations"]
+        expect(expected_invitations.count).to eq(15)
+        expect(expected_invitations.pluck("status").uniq).to eq(["pending"])
+        expect(expected_invitations.pluck("invited_user", "id")).to be_present
+      end
+    end
+
+    context "when there is no Authorization header" do
+
+      it "returns unauthorized" do
+        get "/api/v1/invitations",
+          as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+  end
 end

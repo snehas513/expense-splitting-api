@@ -2,7 +2,7 @@ module Api
   module V1
     class InvitationsController < ApplicationController
       before_action :authenticate_user!
-      before_action :set_group
+      before_action :set_group, except: :user_index
       before_action :set_invited_user, only: :create
       before_action :set_invitation, only: [:accept, :reject]
       before_action :authorize_group_membership, only: :index
@@ -36,6 +36,15 @@ module Api
 
       def index
         response = Invitations::IndexService.new(**fetch_invitations_attributes).call
+        unless response[:success]
+          render json: response, status: :unprocessable_entity
+          return
+        end
+        render json: response, status: :ok
+      end
+
+      def user_index
+        response = Invitations::UserIndexService.new(user: current_user).call
         unless response[:success]
           render json: response, status: :unprocessable_entity
           return
