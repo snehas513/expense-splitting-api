@@ -330,4 +330,79 @@ RSpec.describe "Invitations API", type: :request do
       end
     end
   end
+
+  describe "POST /api/v1/groups/:group_id/invitations/:id/revoke" do
+    let(:user) { create(:user) }
+    let(:user2) { create(:user) }
+    let(:group) { create(:group)}
+    let!(:membership) do
+      [
+        create(:membership, group: group, user: user, role: "admin"),
+        create(:membership, group: group, user: user2, role: "admin")
+      ]
+    end
+  
+    let!(:invitation) { create(:invitation, group: group, invited_by: user) }
+    let(:user_token) { JsonWebToken.encode({ user_id: user.id }) }
+    let(:user2_token) { JsonWebToken.encode({ user_id: user2.id }) }
+
+    context "revokes the invitation" do
+
+      it "returns success" do
+        post "/api/v1/groups/#{group.id}/invitations/#{invitation.id}/revoke",
+          headers: { 
+            "Authorization" => "Bearer #{user2_token}"
+          },
+          as: :json
+        
+        expect(response).to have_http_status(:ok)
+        json = JSON.parse(response.body)
+        expect(json["success"]).to eq(true)
+
+        expected_invitation = json["invitation"]
+
+        expect(expected_invitation["status"]).to eq("revoked")
+        expect(expected_invitation["revoked_at"]).to be_present
+        expect(expected_invitation["responded_at"]).to be_nil
+      end
+    end
+
+    context "when group does not exist" do
+
+      it "returns not found" do
+        post "/api/v1/groups/#{-1}/invitations/#{invitation.id}/revoke",
+          headers: { 
+            "Authorization" => "Bearer #{user_token}"
+          },
+          as: :json
+        
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context "when invitation does not exist" do
+
+      it "returns unprocessable entity" do
+        post "/api/v1/groups/#{group.id}/invitations/#{-1}/revoke",
+          headers: { 
+            "Authorization" => "Bearer #{user_token}"
+          },
+          as: :json
+        
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+    end
+
+    context "when there is no Authorization header" do
+
+      it "returns unauthorized" do
+        invitations_before = Invitation.count
+        post "/api/v1/groups/#{group.id}/invitations/#{invitation.id}/revoke",
+          as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+        expect(Invitation.count).to eq(invitations_before)
+      end
+    end
+  end
 end

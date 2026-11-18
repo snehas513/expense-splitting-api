@@ -29,6 +29,7 @@ Rails.application.routes.draw do
       post "groups/:group_id/invitations/:id/reject", to: "invitations#reject"
       get "groups/:group_id/invitations", to: "invitations#index"
       get "invitations", to: "invitations#user_index"
+      post "groups/:group_id/invitations/:id/revoke", to: "invitations#revoke"
     end
   end
 
