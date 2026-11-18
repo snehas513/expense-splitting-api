@@ -1,6 +1,6 @@
 @baseUrl = http://localhost:3000
 @groupId = 1
-@token = eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjozLCJleHAiOjE3OTQ5ODgyODZ9.xZtWQX8F9s6wdrkmJSxw58vg0l2OpaUq52VU2pSU67M
+@token = eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJleHAiOjE3OTUwNzA5NTN9.cVlD2Hwdpkr8ZNQO-YdnOy9bGOhcVYV98gm4Xj5n6fU
 @actedByToken = eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyLCJleHAiOjE3OTQ4NDI0MDl9.dfTFqwBPtiyya_AiIIc0BMFxtacLMpIe4VPHHZUWhJM
 @next_cursor = eyJleHBlbnNlX2RhdGUiOiIyMDI2LTExLTExIiwiaWQiOjIzfQ==
 @settlementId = 6
@@ -110,4 +110,19 @@ Content-Type: application/json
 POST  {{baseUrl}}/api/v1/groups/2/archive
 Authorization: Bearer {{token}}
 Content-Type: application/json
+
+### Create Invitation
+POST  {{baseUrl}}/api/v1/groups/3/invitations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "invited_user_id": 45
+}
+
+### Accept Invitation
+POST  {{baseUrl}}/api/v1/groups/3/invitations/21/accept
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo1LCJleHAiOjE3OTUwNzg2NTJ9.YOBQRkzTUSUvoEDb7eAVbHZS45p0xkeVVUiMT9kQnwc
+Content-Type: application/json
+
 

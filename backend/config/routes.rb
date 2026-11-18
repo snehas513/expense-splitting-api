@@ -24,6 +24,9 @@ Rails.application.routes.draw do
       get "groups/:group_id", to: "groups#show"
       patch "groups/:group_id", to: "groups#update"
       post "groups/:group_id/archive", to: "groups#archive"
+      post "groups/:group_id/invitations", to: "invitations#create"
+      post "groups/:group_id/invitations/:id/accept", to: "invitations#accept"
+      post "groups/:group_id/invitations/:id/reject", to: "invitations#reject"
     end
   end
 
