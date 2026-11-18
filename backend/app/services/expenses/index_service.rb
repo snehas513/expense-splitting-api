@@ -1,5 +1,7 @@
 class Expenses::IndexService
+  include GroupValidation
   include CursorPagination
+
   attr_reader :group_id, :limit, :cursor
     
   def initialize(group_id:, limit: DEFAULT_LIMIT, cursor: nil)
@@ -33,14 +35,6 @@ class Expenses::IndexService
     validate_group
     validate_limit
     validate_cursor
-  end
-
-  def validate_group
-    if group.blank?
-      @errors << "Group is required"
-    elsif !group.active?
-      @errors << "Group must be active"
-    end
   end
 
   def group

@@ -6,4 +6,13 @@ class Membership < ApplicationRecord
 
 	validates :role, inclusion: { in: ROLE_TYPES }
 	validates :status, inclusion: { in: STATUS_TYPES }
+
+	def as_json(options={})
+		{
+			"id": id,
+			"user": user,
+			"role": role,
+			"status": status
+		}
+	end
 end

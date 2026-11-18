@@ -1,5 +1,6 @@
 module Balances
   class IndexService
+    include GroupValidation
     attr_reader :group
 
     def initialize(group:)
@@ -15,14 +16,6 @@ module Balances
 
     def validate
       validate_group
-    end
-
-    def validate_group
-      if group.blank?
-        @errors << "Group is required"
-      elsif !group.active?
-        @errors << "Group must be active"
-      end
     end
 
     def calculate_balances

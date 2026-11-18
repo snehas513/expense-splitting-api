@@ -1,4 +1,5 @@
 class Settlements::CreateService
+  include GroupValidation
   include DateParser
   attr_reader :group, :sender, :receiver, :creator, :settlement_amount, :settlement_date, :note, :allocations
   
@@ -51,14 +52,6 @@ class Settlements::CreateService
     validate_total_allocation_amount
     validate_allocation_amount_against_expense
     validate_available_amount
-  end
-
-  def validate_group
-    if group.blank?
-      @errors << "Group is required"
-    elsif !group.active?
-      @errors << "Group must be active"
-    end
   end
 
   def active_member_ids(user_ids)

@@ -1,4 +1,5 @@
 class Settlements::IndexService
+  include GroupValidation
   include CursorPagination
 
   attr_reader :group_id, :limit, :cursor, :status
@@ -36,14 +37,6 @@ class Settlements::IndexService
     validate_limit
     validate_cursor
     validate_status
-  end
-
-  def validate_group
-    if group.blank?
-      @errors << "Group is required"
-    elsif !group.active?
-      @errors << "Group must be active"
-    end
   end
 
   def group

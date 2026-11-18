@@ -1,4 +1,5 @@
 class Groups::ShowService
+  include GroupValidation
   attr_reader :user, :group
 
   def initialize(user:, group:)
@@ -18,14 +19,6 @@ class Groups::ShowService
   end
 
   private
-
-  def validate_group
-    if group.blank?
-      @errors << "Group is required"
-    elsif !group.active?
-      @errors << "Group must be active"
-    end
-  end
 
   def fetch_group
     @group = user.groups.find_by(

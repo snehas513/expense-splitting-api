@@ -1,4 +1,5 @@
 class Settlements::ActionService
+  include GroupValidation
   attr_reader :group, :settlement, :acted_by, :creator, :sender, :receiver, :status
 
   def initialize(group:, settlement:, acted_by:, status:)
@@ -35,14 +36,6 @@ class Settlements::ActionService
 
     validate_active_users
     validate_action
-  end
-
-  def validate_group
-    if group.blank?
-      @errors << "Group is required"
-    elsif !group.active?
-      @errors << "Group must be active"
-    end
   end
 
   def validate_settlement

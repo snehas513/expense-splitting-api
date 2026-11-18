@@ -1,4 +1,5 @@
 class Invitations::IndexService
+  include GroupValidation
   attr_reader :group, :user
   
   def initialize(group:, user:)
@@ -20,14 +21,6 @@ class Invitations::IndexService
   def validate
     validate_group
     validate_user
-  end
-
-  def validate_group
-    if group.blank?
-      @errors << "Group is required"
-    elsif !group.active?
-      @errors << "Group must be active"
-    end
   end
 
   def validate_user

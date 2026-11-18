@@ -1,4 +1,5 @@
 class Groups::ArchiveService
+  include GroupValidation
   attr_reader :user, :group
 
   def initialize(user:, group:)
@@ -24,14 +25,6 @@ class Groups::ArchiveService
 
   def validate
     validate_group
-  end
-
-  def validate_group
-    if group.blank?
-      @errors << "Group is required"
-    elsif !group.active?
-      @errors << "Group must be active"
-    end
   end
 
   def fetch_group

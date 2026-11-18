@@ -1,5 +1,6 @@
 module Balances
   class PairwiseService
+    include GroupValidation
     attr_reader :group, :sender, :receiver
 
     def initialize(group:, sender:, receiver:)
@@ -27,14 +28,6 @@ module Balances
       validate_sender
       validate_receiver
       validate_different_users
-    end
-
-    def validate_group
-      if group.blank?
-        @errors << "Group is required"
-      elsif !group.active?
-        @errors << "Group must be active"
-      end
     end
 
     def active_member_ids(user_ids)

@@ -1,4 +1,5 @@
 class Expenses::CreateService
+  include GroupValidation
   attr_reader :group, :creator, :payer, :participants,
             :amount, :description, :expense_date, :note
   
@@ -39,14 +40,6 @@ class Expenses::CreateService
     validate_participants
     validate_payer
     validate_amount_precision
-  end
-
-  def validate_group
-    if group.blank?
-      @errors << "Group is required"
-    elsif !group.active?
-      @errors << "Group must be active"
-    end
   end
 
   def validate_active_user(type:, user:)

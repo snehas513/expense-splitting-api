@@ -1,4 +1,5 @@
 class Invitations::CreateService
+  include GroupValidation
   attr_reader :invited_by, :group, :invited_user
   
   def initialize(invited_by:, group:, invited_user:)
@@ -23,14 +24,6 @@ class Invitations::CreateService
   def validate
     validate_group
     validate_parties
-  end
-
-  def validate_group
-    if group.blank?
-      @errors << "Group is required"
-    elsif !group.active?
-      @errors << "Group must be active"
-    end
   end
 
   def active_member_ids(user_ids)

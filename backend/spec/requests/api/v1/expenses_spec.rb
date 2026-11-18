@@ -398,7 +398,8 @@ RSpec.describe "Expenses API", type: :request do
         )
         participant_users = expense["participants"].map { |p| p["user"] }
         expected_expense.participants.each do |user|
-          expect(participant_users).to include(
+          participant = participant_users.find { |p| p["id"] == user.id }
+          expect(participant).to include(
             "id" => user.id,
             "name" => user.name
           )

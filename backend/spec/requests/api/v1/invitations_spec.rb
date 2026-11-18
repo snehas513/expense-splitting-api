@@ -277,16 +277,16 @@ RSpec.describe "Invitations API", type: :request do
 
     context "when an authenticated user has no membership" do
 
-      it "returns forbidden" do
+      it "returns unprocessable_entity" do
         get "/api/v1/groups/#{group.id}/invitations",
         headers: { 
           "Authorization" => "Bearer #{user_token}"
         },
         as: :json
 
-        expect(response).to have_http_status(:forbidden)
+        expect(response).to have_http_status(:unprocessable_entity)
         json = JSON.parse(response.body)
-        expect(json["error"]).to eq("Authenticated user, but no active membership")
+        expect(json["errors"]).to include("User is not an active admin member of the group")
       end
     end
   end
