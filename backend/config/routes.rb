@@ -44,6 +44,7 @@ Rails.application.routes.draw do
 
       # Group Memberships
       get "groups/:group_id/members", to: "memberships#index"
+      post "groups/:group_id/leave", to: "memberships#leave"
     end
   end
 

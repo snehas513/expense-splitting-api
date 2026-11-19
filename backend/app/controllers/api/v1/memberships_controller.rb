@@ -14,6 +14,15 @@ module Api
         render json: response, status: :ok
       end
 
+      def leave
+        response = Memberships::LeaveService.new(group: @group, user: current_user).call
+        unless response[:success]
+          render json: response, status: :unprocessable_entity
+          return
+        end
+        render json: response, status: :ok
+      end
     end
+    
   end
 end
