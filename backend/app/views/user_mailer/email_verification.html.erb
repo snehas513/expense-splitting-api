@@ -1,0 +1,21 @@
+<h2>Hello <%= @user.name %>,</h2>
+
+<p>
+  You requested to change your email address.
+</p>
+
+<p>
+  Click the link below to verify your new email address:
+</p>
+
+<p>
+  <%= link_to "Verify Email Address", @verification_url %>
+</p>
+
+<p>
+  This link expires in 30 minutes.
+</p>
+
+<p>
+  If you didn't request this change, you can ignore this email.
+</p>

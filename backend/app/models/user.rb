@@ -68,4 +68,14 @@ class User < ApplicationRecord
       "email": email
     }
   end
+
+  def profile_json
+    {
+      id: id,
+      name: name,
+      email: email,
+      email_verified: email_verified_at.present?,
+      created_at: created_at.iso8601
+    }
+  end
 end
