@@ -45,6 +45,8 @@ Rails.application.routes.draw do
       # Group Memberships
       get "groups/:group_id/members", to: "memberships#index"
       post "groups/:group_id/leave", to: "memberships#leave"
+      delete "groups/:group_id/members/:target_user_id", to: "memberships#remove"
+      patch "groups/:group_id/members/:target_user_id/role", to: "memberships#update_role"
     end
   end
 
