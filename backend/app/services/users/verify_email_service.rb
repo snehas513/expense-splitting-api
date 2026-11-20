@@ -1,4 +1,6 @@
 class Users::VerifyEmailService
+  include EmailVerificationToken
+
   attr_reader :user, :raw_token
 
   def initialize(user:, raw_token:)
@@ -55,12 +57,9 @@ class Users::VerifyEmailService
       return
     end
 
-    token_digest = Digest::SHA256.hexdigest(raw_token)
+    stored_digest = user.email_verification_token_digest
 
-    unless ActiveSupport::SecurityUtils.secure_compare(
-            token_digest,
-            user.email_verification_token_digest
-          )
+    unless valid_verification_token?(stored_digest)
       @errors << "Raw token is invalid"
     end
   end
@@ -77,7 +76,8 @@ class Users::VerifyEmailService
 
   def send_email
     UserMailer.email_change_confirmation(
-      user: user
+      user: user,
+      purpose: :email_change
     ).deliver_later
   end
 end

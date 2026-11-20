@@ -49,7 +49,13 @@ class User < ApplicationRecord
           uniqueness: { case_sensitive: false },
           format: { with: URI::MailTo::EMAIL_REGEXP },
           allow_nil: true
+
   has_secure_password
+  validates :password, length: { minimum: 8 }, if: -> { password.present? }
+  validates :password,
+          format: { with: /\A[a-zA-Z0-9]+\z/, message: "must contain only letters and numbers" },
+          if: -> { password.present? }
+          
   validates :status, inclusion: { in: STATUS_TYPES }
 
   before_validation do

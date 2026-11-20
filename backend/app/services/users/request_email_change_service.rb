@@ -1,4 +1,6 @@
 class Users::RequestEmailChangeService
+  include EmailVerificationToken
+
   attr_reader :user, :new_email
 
   def initialize(user:, new_email:)
@@ -52,17 +54,10 @@ class Users::RequestEmailChangeService
     end
   end
 
-  def generate_verification_token
-    @raw_token = SecureRandom.urlsafe_base64(32)
-  end
-
   def store_verification_token
-    token_digest = Digest::SHA256.hexdigest(@raw_token)
-    expires_at = 30.minutes.from_now
-
     user.update!(
       email_verification_token_digest: token_digest, 
-      email_verification_token_expires_at: expires_at, 
+      email_verification_token_expires_at: token_expires_at, 
       pending_email: new_email
     )
   end
@@ -70,7 +65,8 @@ class Users::RequestEmailChangeService
   def send_email
     UserMailer.email_verification(
       user: user,
-      raw_token: @raw_token
+      raw_token: @raw_token,
+      purpose: :email_change
     ).deliver_later
   end    
 

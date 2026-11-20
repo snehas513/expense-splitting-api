@@ -113,4 +113,26 @@ RSpec.describe User, type: :model do
 
     expect(user).not_to be_valid
   end
+
+  it "rejects passwords shorter than 8 characters" do
+    user = User.new(
+      name: "Sneha",
+      email: "alice@example.com",
+      password: "abc123",
+      password_confirmation: "abc123"
+    )
+
+    expect(user).not_to be_valid
+  end
+
+  it "rejects passwords containing non-alphanumeric characters" do
+    user = User.new(
+      name: "Sneha",
+      email: "alice@example.com",
+      password: "password@123",
+      password_confirmation: "password@123"
+    )
+
+    expect(user).not_to be_valid
+  end
 end

@@ -58,6 +58,11 @@ Rails.application.routes.draw do
       # User Notifications
       get "notifications", to: "notifications#index"
       patch "notifications/:id/mark_as_read", to: "notifications#mark_as_read"
+
+      # Authentication
+      post "auth/register", to: "auth#register"
+      post "auth/verify_email", to: "auth#verify_email"
+      post "auth/login", to: "auth#login"
     end
   end
 

@@ -1,21 +1,19 @@
+
 <h2>Hello <%= @user.name %>,</h2>
 
-<p>
-  You requested to change your email address.
-</p>
-
-<p>
-  Click the link below to verify your new email address:
-</p>
+<% if @purpose == :registration %>
+  <p>Thank you for registering. Please verify your email address to complete registration.</p>
+<% elsif @purpose == :email_change %>
+  <p>You requested to change your email address.</p>
+  <p>Please verify your new email address:</p>
+<% end %>
 
 <p>
   <%= link_to "Verify Email Address", @verification_url %>
 </p>
 
-<p>
-  This link expires in 30 minutes.
-</p>
+<p>This link expires in 30 minutes.</p>
 
 <p>
-  If you didn't request this change, you can ignore this email.
+  If you didn't request this, you can ignore this email.
 </p>

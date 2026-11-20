@@ -5,7 +5,7 @@ RSpec.describe UserMailer, type: :mailer do
 
   describe ".email_verification" do
     let(:result) {
-      described_class.email_verification(user: user, raw_token: "test-token")
+      described_class.email_verification(user: user, raw_token: "test-token", purpose: :email_change)
     }
          
     it "sends the verification email" do
@@ -18,7 +18,7 @@ RSpec.describe UserMailer, type: :mailer do
 
   describe ".email_change_confirmation" do
     let(:result) {
-      described_class.email_change_confirmation(user: user)
+      described_class.email_change_confirmation(user: user, purpose: :email_change)
     }
 
     it "sends the change confirmation email" do
