@@ -151,6 +151,11 @@ RSpec.describe Expenses::CreateService do
 
     context "when creator is deactivated" do
       let(:creator) { create(:user, :deactivated) }
+      let!(:memberships) do
+        [creator, payer, participant1, participant2].map do |user|
+          create(:membership, group: group, user: user)
+        end
+      end
 
       it "returns an error" do
         expect(result[:success]).to be(false)
@@ -160,7 +165,12 @@ RSpec.describe Expenses::CreateService do
 
     context "when payer is deactivated" do
       let(:payer) { create(:user, :deactivated) }
-
+      let!(:memberships) do
+        [creator, payer, participant1, participant2].map do |user|
+          create(:membership, group: group, user: user)
+        end
+      end
+      
       it "returns an error" do
         expect(result[:success]).to be(false)
         expect(result[:errors]).to include("Payer must have an active account and active membership in the group")
@@ -411,7 +421,7 @@ RSpec.describe Expenses::CreateService do
       end
     end
 
-    context "when amount is infinite" do
+    context "when amount is NAN" do
       let!(:memberships) do
         [creator, payer, participant1, participant2].map do |user|
           create(:membership, group: group, user: user)
