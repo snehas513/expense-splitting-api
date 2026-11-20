@@ -57,6 +57,7 @@ Rails.application.routes.draw do
 
       # User Notifications
       get "notifications", to: "notifications#index"
+      patch "notifications/:id/mark_as_read", to: "notifications#mark_as_read"
     end
   end
 
