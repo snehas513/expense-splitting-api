@@ -296,4 +296,96 @@ RSpec.describe "Users API", type: :request do
       end
     end
   end
+
+  describe "POST /api/v1/users/me/deactivate" do
+    let(:user) { create(:user) }
+    let(:payer) { create(:user) }
+    let(:group1) { create(:group) }
+    let(:group2) { create(:group) }
+    let!(:memberships) do
+      [
+        create(:membership, group: group1, user: user, role: "member"),
+        create(:membership, group: group1, user: payer, role: "admin"),
+        create(:membership, group: group2, user: user, role: "member"),
+        create(:membership, group: group2, user: payer, role: "admin")
+      ]
+    end
+
+    let(:user_token) { JsonWebToken.encode({ user_id: user.id }) }
+
+    context "when user is deactivated with valid attributes" do
+      it "returns success" do
+        post "/api/v1/users/me/deactivate",
+        headers: { 
+          "Authorization" => "Bearer #{user_token}"
+        },
+        as: :json
+
+        expect(response).to have_http_status(:ok)
+
+        json = JSON.parse(response.body)
+        expect(json["success"]).to eq(true)
+        user.reload
+        expect(user.status).to eq("deactivated")
+        expect(user.memberships.pluck(:status).uniq).to eq(["inactive"])
+      end
+    end
+
+    context "when user has outstanding balances to settle" do
+      let!(:expense) { create(:expense, group: group1, creator: payer, payer: payer, amount: 900) }
+
+      let!(:expense_participant_for_expense) do
+        [payer, user].map do |participant|
+          create(:expense_participant,
+            expense: expense,
+            user: participant,
+            share_amount: 450
+          )
+        end
+      end
+
+      it "returns unprocessable_entity" do
+        post "/api/v1/users/me/deactivate",
+        headers: { 
+          "Authorization" => "Bearer #{user_token}"
+        },
+        as: :json
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        
+        result = JSON.parse(response.body)
+        
+        expect(result["success"]).to be(false)
+        expect(result["errors"]).to include(
+          "User has outstanding balances to settle"
+        )
+        expect(user.status).to eq("active")
+        expect(user.memberships.pluck(:status).uniq).to eq(["active"])
+      end
+    end
+
+    context "when user is deactivated" do
+      let(:user) { create(:user, :deactivated) }
+
+      it "returns unauthorized" do
+        post "/api/v1/users/me/deactivate",
+          headers: { 
+          "Authorization" => "Bearer #{user_token}"
+        },
+        as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context "when there is no Authorization header" do
+
+      it "returns unauthorized" do
+        post "/api/v1/users/me/deactivate",
+        as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+  end
 end

@@ -35,6 +35,16 @@ module Api
         render json: response, status: :ok
       end
 
+      def deactivate
+        response = Users::DeactivateService.new(user: current_user).call
+        
+        unless response[:success]
+          render json: response, status: :unprocessable_entity
+          return
+        end
+        render json: response, status: :ok
+      end
+
       private
 
       def user_attributes

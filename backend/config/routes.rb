@@ -53,6 +53,7 @@ Rails.application.routes.draw do
       patch "users/me", to: "users#update_profile"
       post "users/me/email_change", to: "users#email_change"
       post "users/me/email_verification", to: "users#email_verification"
+      post "users/me/deactivate", to: "users#deactivate"
     end
   end
 
