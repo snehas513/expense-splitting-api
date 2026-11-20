@@ -54,6 +54,9 @@ Rails.application.routes.draw do
       post "users/me/email_change", to: "users#email_change"
       post "users/me/email_verification", to: "users#email_verification"
       post "users/me/deactivate", to: "users#deactivate"
+
+      # User Notifications
+      get "notifications", to: "notifications#index"
     end
   end
 

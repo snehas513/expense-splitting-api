@@ -100,7 +100,19 @@ class Settlements::ActionService
   end
 
   def update_settlement
-    settlement.update!(status: status, acted_by: acted_by)
+    Settlement.transaction(requires_new: true) do
+      settlement.update!(status: status, acted_by: acted_by)
+      response = send_notification
+     
+      unless response[:success]
+        @errors.concat(response[:errors])
+        raise ActiveRecord::Rollback
+      end
+    end
+  end
+
+  def send_notification
+    raise NotImplementedError
   end
 
 end

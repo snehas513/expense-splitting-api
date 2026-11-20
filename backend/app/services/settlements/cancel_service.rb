@@ -15,6 +15,10 @@ class Settlements::CancelService < Settlements::ActionService
 
     @errors << "Acted By must be the creator" if creator.id != acted_by.id
   end
+
+  def send_notification
+    { success: true }
+  end
 end
 
 # group = Group.first

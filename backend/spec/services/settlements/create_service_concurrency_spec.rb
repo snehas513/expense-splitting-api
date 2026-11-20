@@ -30,12 +30,17 @@ RSpec.describe Settlements::CreateService do
     SettlementExpense.where(
       settlement_id: Settlement.where(group_id: group.id).select(:id)
     ).delete_all
-
+    
     Settlement.where(group_id: group.id).delete_all
     ExpenseParticipant.where(expense_id: expense.id).delete_all
     Expense.where(id: expense.id).delete_all
     Membership.where(group_id: group.id).delete_all
     Group.where(id: group.id).delete_all
+
+    Notification.where(
+      user_id: [sender.id, receiver.id, creator.id]
+    ).delete_all
+
     User.where(id: [sender.id, receiver.id, creator.id]).delete_all
   end
 

@@ -14,6 +14,8 @@ class Invitations::CreateService
     return { success: false, errors: @errors } unless @errors.empty?
     
     create_invitation
+    return { success: false, errors: @errors } unless @errors.empty?
+
     { success: true, invitation: @invitation }
   rescue ActiveRecord::RecordInvalid => e
     { success: false, errors: e.record.errors.full_messages }
@@ -81,12 +83,28 @@ class Invitations::CreateService
   end
 
   def create_invitation
-    @invitation = group.invitations.create!(
-      status: "pending",
-      invited_by_id: invited_by.id,
-      invited_user_id: invited_user.id,
-      sent_at: Time.current
-    )
+    Invitation.transaction do
+      @invitation = group.invitations.create!(
+        status: "pending",
+        invited_by_id: invited_by.id,
+        invited_user_id: invited_user.id,
+        sent_at: Time.current
+      )
+      response = send_notification
+     
+      unless response[:success]
+        @errors.concat(response[:errors])
+        raise ActiveRecord::Rollback
+      end
+    end
+  end
+
+  def send_notification
+    Notifications::CreateService.new(
+      user: invited_user,
+      notification_type: "group_invitation",
+      message: "#{invited_by.name} invited you to join #{group.name}."
+    ).call
   end
 
 end

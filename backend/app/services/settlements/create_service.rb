@@ -22,12 +22,10 @@ class Settlements::CreateService
       validate
       return { success: false, errors: @errors } unless @errors.empty?
      
-      Settlement.transaction do
-        create_settlement
-        create_settlement_expenses
-      end
+      process_settlement_creation
+      return { success: false, errors: @errors } unless @errors.empty?
         
-        { success: true, settlement: @settlement }
+      { success: true, settlement: @settlement }
     rescue ActiveRecord::RecordInvalid => e
       { success: false, errors: e.record.errors.full_messages }
     end
@@ -279,5 +277,26 @@ class Settlements::CreateService
 
   def create_settlement_expenses
     @settlement.settlement_expenses.create!(@validated_allocations)
+  end
+
+  def process_settlement_creation
+    Settlement.transaction(requires_new: true) do
+      create_settlement
+      create_settlement_expenses
+      response = send_notification
+     
+      unless response[:success]
+        @errors.concat(response[:errors])
+        raise ActiveRecord::Rollback
+      end
+    end
+  end
+
+  def send_notification
+    Notifications::CreateService.new(
+      user: receiver,
+      notification_type: "settlement_request",
+      message: "#{sender.name} requested a settlement of ₹#{settlement_amount} in #{group.name}."
+    ).call
   end
 end

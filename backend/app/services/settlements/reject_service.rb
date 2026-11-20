@@ -12,6 +12,14 @@ class Settlements::RejectService < Settlements::ActionService
 
     validate_different_users
   end
+
+  def send_notification
+    Notifications::CreateService.new(
+      user: settlement.creator,
+      notification_type: "settlement_rejection",
+      message: "#{settlement.acted_by.name} rejected your settlement request of ₹#{settlement.settlement_amount} in #{settlement.group.name}."
+    ).call
+  end
 end
 
 # group = Group.first

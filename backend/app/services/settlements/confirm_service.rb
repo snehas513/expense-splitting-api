@@ -12,6 +12,14 @@ class Settlements::ConfirmService < Settlements::ActionService
 
     validate_different_users
   end
+
+  def send_notification
+    Notifications::CreateService.new(
+      user: settlement.creator,
+      notification_type: "settlement_confirmation",
+      message: "#{settlement.acted_by.name} confirmed your settlement request of ₹#{settlement.settlement_amount} in #{settlement.group.name}."
+    ).call
+  end
 end
 
 # group = Group.first
