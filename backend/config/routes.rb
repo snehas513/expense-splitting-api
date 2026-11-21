@@ -33,6 +33,7 @@ Rails.application.routes.draw do
       get "groups/:group_id", to: "groups#show"
       patch "groups/:group_id", to: "groups#update"
       post "groups/:group_id/archive", to: "groups#archive"
+      get "groups/:group_id/inviteable_users", to: "groups#inviteable_users"
 
       # Group Invitations
       post "groups/:group_id/invitations", to: "invitations#create"

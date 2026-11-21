@@ -324,4 +324,56 @@ RSpec.describe "Groups API", type: :request do
     end
     
   end
+
+  describe "GET /api/v1/groups/:group_id/inviteable_users" do
+    let(:user) { create(:user) }
+    let(:group) { create(:group) }
+
+    let(:user_token) { JsonWebToken.encode({ user_id: user.id }) }
+
+    context "when user is an active group admin" do
+      let!(:membership) do
+        create(:membership, group: group, user: user, role: "admin")
+      end
+
+      let!(:inviteable_user) { create(:user) }
+
+      it "returns inviteable users" do
+        get "/api/v1/groups/#{group.id}/inviteable_users",
+          headers: {
+            "Authorization" => "Bearer #{user_token}"
+          },
+          as: :json
+
+        expect(response).to have_http_status(:ok)
+
+        json = JSON.parse(response.body)
+
+        expect(json["success"]).to be(true)
+        expect(json["users"].pluck("id")).to include(inviteable_user.id)
+      end
+    end
+
+    context "when group does not exist" do
+      it "returns not found" do
+        get "/api/v1/groups/#{-1}/inviteable_users",
+          headers: {
+            "Authorization" => "Bearer #{user_token}"
+          },
+          as: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context "when there is no Authorization header" do
+      it "returns unauthorized" do
+        get "/api/v1/groups/#{group.id}/inviteable_users",
+          as: :json
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+  end
+
 end

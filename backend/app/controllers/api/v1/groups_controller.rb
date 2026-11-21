@@ -2,7 +2,7 @@ module Api
   module V1
     class GroupsController < ApplicationController
       before_action :authenticate_user!
-      before_action :set_group, only: [:show, :update, :archive]
+      before_action :set_group, only: [:show, :update, :archive, :inviteable_users]
 
       def create
         response = Groups::CreateService.new(**group_attributes).call
@@ -49,6 +49,16 @@ module Api
         render json: response, status: :ok
       end
 
+      def inviteable_users
+        response = Groups::InviteableUsersService.new(**inviteable_users_attributes).call
+        unless response[:success]
+          render json: response, status: :unprocessable_entity
+          return
+        end
+
+        render json: response, status: :ok
+      end
+
       private
 
       def group_attributes
@@ -70,6 +80,14 @@ module Api
           user: current_user,
           group: @group,
           attributes: attributes
+        }
+      end
+
+      def inviteable_users_attributes
+        {
+          user: current_user,
+          group: @group,
+          query: params[:query]
         }
       end
     end
