@@ -3,12 +3,14 @@ services:
     image: mysql:8.4
     container_name: expense_splitting_db
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: expense_splitting_development
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    env_file:
+      - ./backend/.env
 
   backend:
     build:
@@ -21,6 +23,10 @@ services:
       - "3000:3000"
     depends_on:
       - db
+    env_file:
+      - ./backend/.env
+    environment:
+      LAUNCHY_DRY_RUN: "true"
 
 volumes:
   mysql_data:

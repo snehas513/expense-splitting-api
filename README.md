@@ -1,24 +1,21 @@
 # Expense Splitting API
 
-A RESTful backend application for managing shared expenses, tracking group balances, and recording settlements between members.
+A RESTful backend application for managing shared expenses, group balances, and settlements.
 
-The application allows users to create groups, split expenses, track individual debts, and manage settlement requests for payments made outside the application.
+## Overview
 
-## Project Overview
+Expense Splitting API helps users manage shared expenses within groups. Users can create groups, invite members, record expenses, track balances, and settle outstanding amounts.
 
-Expense Splitting API supports:
-
-- User registration and JWT-based authentication.
+The application provides:
+- User registration, email verification, and JWT-based authentication.
 - Group creation and membership management.
-- Group invitations and role-based access.
-- Shared expense creation with equal splitting.
-- Individual balance calculation and debt tracking.
-- Partial settlements with expense-level allocations.
+- Expense creation with equal splitting among participants.
+- Group-level balance calculations.
+- Partial settlements with expense-level allocation tracking.
 - Settlement confirmation, rejection, and cancellation.
-- In-app notifications.
-- Expense and settlement history.
+- Notifications for group invitations and settlement activities.
 
-## Technology Stack
+## Tech Stack
 
 - **Backend:** Ruby on Rails (API mode)
 - **Language:** Ruby
@@ -26,7 +23,7 @@ Expense Splitting API supports:
 - **Authentication:** JWT
 - **Containerization:** Docker and Docker Compose
 - **Testing:** RSpec
-- **API Style:** REST
+- **API:** REST
 
 ## Project Structure
 
@@ -40,105 +37,180 @@ expense-splitting-api/
 
 ## Key Features
 
-### Authentication and User Management
+### 1. Authentication and User Management
+- User registration with email verification.
 - JWT-based authentication.
-- User profile management.
+- Login restricted to verified users.
+- User profile retrieval and name updates.
 - Email change with verification.
-- Account deactivation with business-rule validation.
+- Account deactivation.
 
-### Groups and Memberships
-- Group creation, updates, and archival.
-- Admin and regular member roles.
-- Invitation acceptance, rejection, and revocation.
-- Membership management with historical records.
-- Safeguards for group administration.
+### 2. Groups and Membership
+- Create, update, and archive groups.
+- Group creator is automatically assigned the admin role.
+- Invite users to groups.
+- Accept, reject, and revoke invitations.
+- Manage group membership and member roles.
+- Preserve membership history when members leave or are removed.
+- Enforce safeguards around admin and membership operations.
 
-### Expense Management
-- Expense creation with equal splitting.
-- Multiple participants and a single payer.
-- Exact share calculation, including rounding adjustments.
-- Expense history with cursor-based pagination.
+### 3. Expense Management
+- Create expenses within a group.
+- Support multiple participants with a single payer.
+- Split expenses equally among participants.
+- Handle rounding adjustments to ensure the total shares match the expense amount.
+- Retrieve expense history with cursor-based pagination.
 
-### Balance Calculation
-- Group-level balance calculation.
-- Individual outstanding debts.
-- Confirmed settlements reduce balances.
+### 4. Balance Management
+- Calculate group-level balances.
+- Track individual amounts owed and receivable.
+- Reflect confirmed settlements in balance calculations.
 - Pending, rejected, and cancelled settlements do not affect balances.
 
-### Settlement Management
-- Settlement requests for external payments.
-- Partial settlements.
-- Allocation of settlements across multiple expenses.
-- Confirmation, rejection, and cancellation workflows.
-- Settlement history with cursor-based pagination.
+### 5. Settlements
+- Create settlement requests between group members.
+- Support partial settlements.
+- Allocate settlement amounts against individual expenses.
+- Confirm, reject, or cancel settlement requests.
+- Retrieve settlement history with cursor-based pagination.
 
-### Notifications
-- In-app notifications for:
-  - Group invitations.
-  - Settlement requests.
-  - Settlement confirmations.
-  - Settlement rejections.
-- Notification listing and read status management.
+### 6. Notifications
+- Generate notifications for group invitations and settlement activities.
+- Retrieve user notifications.
+- Mark individual notifications as read.
 
 ## Engineering and Data Integrity
 
-The application incorporates several backend design considerations:
+- **Financial precision:** Uses `DECIMAL(12,2)` for monetary values instead of floating-point types.
+- **Accurate expense splitting:** Ensures participant shares add up exactly to the original expense amount, including rounding adjustments.
+- **Database constraints:** Uses foreign keys, unique indexes, and check constraints to enforce data integrity.
+- **Historical records:** Retains inactive membership records instead of permanently removing membership history.
+- **Settlement allocation tracking:** Tracks how settlement amounts are allocated against individual expenses.
+- **Transaction management:** Uses database transactions to keep related operations consistent.
+- **Concurrency handling:** Uses group-level locking to protect settlement allocation operations from concurrent requests.
+- **Automated testing:** Uses RSpec for model, service, and API request specifications.
 
-- Monetary values use MySQL `DECIMAL(12,2)` instead of floating-point types.
-- Expense shares are calculated so that their sum exactly matches the expense amount.
-- Database foreign keys and unique constraints protect relational integrity.
-- Historical membership records are retained when members leave or are removed.
-- Settlement allocations are tracked against individual expenses.
-- Pending and confirmed allocations are considered when validating available settlement amounts.
-- Database transactions protect multi-step operations.
-- Group-level locking provides concurrency protection for settlement operations.
-- RSpec tests cover models, services, and API request behaviour.
+## Getting Started
+
+### Prerequisites
+
+Make sure the following are installed:
+
+- Git
+- Docker
+- Docker Compose
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/snehas513/expense-splitting-api.git
+cd expense-splitting-api
+```
+
+### 2. Configure environment variables and credentials
+
+Create a `.env` file inside the `backend/` directory.
+
+For local development, configure:
+
+```env
+MYSQL_ROOT_PASSWORD=root
+MYSQL_USER=root
+MYSQL_PASSWORD=root
+```
+
+Add any other environment variables required by the application, such as email delivery credentials.
+
+The JWT signing secret must also be configured in Rails credentials.
+
+Do not commit `.env`, `config/master.key`, or other secret credentials to Git.
+
+### 3. Build and start the application
+
+From the project root:
+
+```bash
+docker compose --env-file backend/.env up --build -d
+```
+
+This starts:
+- MySQL 8.4 on port `3306`.
+- Rails API server on port `3000`.
+
+### 4. Create and migrate the database
+
+```bash
+docker compose exec backend bin/rails db:create db:migrate
+```
+
+### 5. Verify the application
+
+The API is available at:
+
+```text
+http://localhost:3000
+```
+
+Health check endpoint:
+
+```http
+GET http://localhost:3000/api/v1/health
+```
+
+### 6. Run the test suite
+
+From the project root:
+
+```bash
+docker compose exec backend bundle exec rspec
+```
+
+## Running Tests
+
+The project uses RSpec for automated testing, covering:
+
+- Model validations and associations.
+- Service-level business logic.
+- API request and response behaviour.
+- Authentication and authorization.
+- Expense and balance calculations.
+- Settlement lifecycle and allocation handling.
+- Notifications.
 
 ## Current Project Status
 
-The core backend functionality for the MVP has been implemented.
+The core backend MVP is implemented.
 
-**Implemented**
+Implemented modules:
 - Authentication and user management.
-- Groups, memberships, and invitations.
-- Expense creation and history.
-- Balance calculation.
-- Settlement lifecycle and expense allocations.
-- In-app notifications.
+- Groups and memberships.
+- Invitations.
+- Expense management.
+- Balance calculations.
+- Settlement management.
+- Notifications.
 - Cursor-based pagination.
-- Transactional operations and concurrency protection.
+- Transactional and concurrency safeguards.
 
-**Planned / Deferred**
+### Planned / Deferred
+
+The following are outside the current MVP scope:
+
 - Streamlit frontend.
-- Detailed API documentation with request and response examples.
+- Dedicated API documentation.
 - Automated audit logging.
 - Expense deletion and restoration.
 - Group soft deletion and restoration.
 - Background job processing using Sidekiq and Redis.
-- Email and push notifications.
+- Broader email and push notification workflows.
 
-## Running the Project
-
-Setup and execution instructions will be documented as part of the project documentation.
-
-The application uses Docker for the development environment and MySQL for persistence.
-
-## Testing
-
-The backend uses RSpec for automated testing.
-
-Run the test suite from the `backend/` directory:
-
-```bash
-bundle exec rspec
-```
+Registration verification and email-change verification emails are implemented. Broader notification delivery through email and push channels remains deferred.
 
 ## Future Development
 
-The next development phase focuses on:
+Planned next steps include:
 
-1. Completing API documentation.
-2. Building the Streamlit frontend.
-3. Integrating the frontend with the Rails API.
-4. Improving project setup and deployment documentation.
-
+- Building a Streamlit frontend integrated with the Rails API.
+- Adding dedicated API documentation.
+- Deploying the application.
+- Completing deployment documentation.
