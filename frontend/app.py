@@ -47,11 +47,45 @@ if st.session_state.get("token") and "user" not in st.session_state:
         except (TypeError, json.JSONDecodeError):
             st.session_state["user"] = {}
 
+# Show login if the user is not authenticated.
+# The verification token remains in the URL during login.
 if not st.session_state.get("token"):
     render_login(local_storage, show_error)
     st.stop()
 
 api = client()
+
+# Verify email when the user returns through the email link.
+verification_token = st.query_params.get("token")
+
+if verification_token:
+    try:
+        verification_response = api.post(
+            "/api/v1/users/me/email_verification",
+            {"raw_token": verification_token},
+        )
+
+        verified_user = verification_response.get("user", {})
+
+        if verified_user:
+            st.session_state["user"] = verified_user
+            local_storage.setItem(
+                "expense_splitter_user",
+                json.dumps(verified_user),
+                key="verify_user_email",
+            )
+
+        st.session_state["success_message"] = (
+            "Your email address has been verified successfully."
+        )
+
+    except APIError as exc:
+        show_error(exc)
+
+    finally:
+        # Remove the token from the URL after attempting verification.
+        if "token" in st.query_params:
+            del st.query_params["token"]
 
 # Show success messages after reruns.
 if st.session_state.get("success_message"):
