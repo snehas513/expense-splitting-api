@@ -45,3 +45,6 @@ class APIClient:
 
     def patch(self, path, payload=None):
         return self._request("PATCH", path, payload or {})
+
+    def delete(self, path):
+        return self._request("DELETE", path)
