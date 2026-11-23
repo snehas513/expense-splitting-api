@@ -53,6 +53,11 @@ def clear_authentication():
         "selected_group_id",
         "group_memberships",
         "group_expenses",
+        "pending_remove_user_id",
+        "pending_leave_group",
+        "pending_archive_group",
+        "pending_account_deactivation",
+        "success_message",
     ):
         st.session_state.pop(key, None)
 

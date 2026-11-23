@@ -33,7 +33,6 @@ def test_profile_details_are_displayed():
     assert any("Email verified" in item.value for item in app.markdown)
     assert any("Yes" in item.value for item in app.markdown)
     assert any("2026-11-20" in item.value for item in app.markdown)
-    assert any("Admin" in item.value for item in app.markdown)
 
 
 def test_user_can_update_profile_name():

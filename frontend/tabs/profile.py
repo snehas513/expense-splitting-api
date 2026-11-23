@@ -18,30 +18,6 @@ def render(api, group_id, money, show_error, local_storage):
         )
         st.write(f"**Account created:** {profile.get('created_at', '—')}")
 
-        current_user_id = (st.session_state.get("user") or {}).get("id")
-        memberships = st.session_state.get("group_memberships", [])
-
-        current_membership = next(
-            (
-                membership
-                for membership in memberships
-                if str(
-                    membership.get("user_id")
-                    or (membership.get("user") or {}).get("id")
-                ) == str(current_user_id)
-                and membership.get("status") == "active"
-            ),
-            None,
-        )
-
-        role = (
-            current_membership.get("role", "").title()
-            if current_membership
-            else "No active group membership"
-        )
-
-        st.write(f"**Role in selected group:** {role}")
-
         # Update profile name.
         st.divider()
         st.markdown("#### Update Profile")
