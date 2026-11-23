@@ -19,6 +19,7 @@ Rails.application.routes.draw do
 
       # Balances
       get "groups/:group_id/balances", to: "balances#index"
+      get "groups/:group_id/balances/:member_id", to: "balances#show"
 
       # Settlements
       post "groups/:group_id/settlements", to: "settlements#create"
