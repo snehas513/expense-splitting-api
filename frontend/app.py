@@ -1,5 +1,6 @@
 
 import json
+import os
 import streamlit as st
 from streamlit_local_storage import LocalStorage
 from api_client import APIError
@@ -17,16 +18,22 @@ from tabs import (
     profile,
     group_management,
 )
+import time
 
 st.set_page_config(page_title="Expense Splitter", page_icon="💸", layout="wide")
 st.title("💸 Expense Splitter")
 st.caption("A simple frontend for your Expense Splitting API")
 
 # Developer settings.
+default_api_url = os.getenv(
+    "API_BASE_URL",
+    "http://localhost:3000",
+)
+
 with st.sidebar.expander("Developer Settings"):
     API_URL = st.text_input(
         "Rails API base URL",
-        value=st.session_state.get("api_url", "http://localhost:3000"),
+        value=st.session_state.get("api_url", default_api_url),
         help="Use the address reachable from the machine running Streamlit.",
     )
     st.session_state["api_url"] = API_URL.rstrip("/")
@@ -47,6 +54,8 @@ def clear_authentication():
         except KeyError:
             pass
 
+    time.sleep(0.5)
+
     for key in (
         "token",
         "user",
@@ -60,7 +69,6 @@ def clear_authentication():
         "success_message",
     ):
         st.session_state.pop(key, None)
-
 
 # Restore JWT from browser local storage.
 if "token" not in st.session_state:

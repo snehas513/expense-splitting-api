@@ -3,7 +3,7 @@ services:
     image: mysql:8.4
     container_name: expense_splitting_db
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD:-root}
       MYSQL_DATABASE: expense_splitting_development
     ports:
       - "3306:3306"
@@ -27,6 +27,20 @@ services:
       - ./backend/.env
     environment:
       LAUNCHY_DRY_RUN: "true"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    command: streamlit run app.py --server.address=0.0.0.0 --server.port=8501
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "8501:8501"
+    depends_on:
+      - backend
+    environment:
+      API_BASE_URL: http://backend:3000
 
 volumes:
   mysql_data:
