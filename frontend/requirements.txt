@@ -1,3 +1,5 @@
 streamlit
 requests
 streamlit-local-storage
+pytest
+pytest-mock

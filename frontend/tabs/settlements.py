@@ -1,6 +1,29 @@
+
 import streamlit as st
 from api_client import APIError
 from decimal import Decimal
+
+
+def get_settlement_permissions(
+    current_user_id,
+    sender_id,
+    receiver_id,
+    creator_id,
+):
+    is_creator = str(current_user_id) == str(creator_id)
+
+    is_other_party = (
+        str(current_user_id) in {
+            str(sender_id),
+            str(receiver_id),
+        }
+        and not is_creator
+    )
+
+    return {
+        "can_cancel": is_creator,
+        "can_respond": is_other_party,
+    }
 
 
 def render(api, group_id, money, show_error):
@@ -180,8 +203,12 @@ def render(api, group_id, money, show_error):
                 status = settlement.get("status") or "unknown"
                 settlement_id = settlement.get("id")
 
-                is_sender = str(current_user_id) == str(sender.get("id"))
-                is_receiver = str(current_user_id) == str(receiver.get("id"))
+                permissions = get_settlement_permissions(
+                    current_user_id=current_user_id,
+                    sender_id=sender.get("id"),
+                    receiver_id=receiver.get("id"),
+                    creator_id=creator.get("id"),
+                )
 
                 with st.expander(
                     f'{sender.get("name", "—")} → '
@@ -200,8 +227,8 @@ def render(api, group_id, money, show_error):
                     actor = settlement.get("acted_by") or {}
                     st.write(f'**Last action by:** {actor.get("name", "—")}')
 
-                    # Receiver can confirm or reject a pending settlement.
-                    if status == "pending" and is_receiver:
+                    # The other party can confirm or reject a pending settlement.
+                    if status == "pending" and permissions["can_respond"]:
                         st.divider()
                         st.write("**Respond to settlement request**")
 
@@ -264,8 +291,8 @@ def render(api, group_id, money, show_error):
                                 except APIError as exc:
                                     show_error(exc)
 
-                    # Only the sender can cancel a pending settlement.
-                    if status == "pending" and is_sender:
+                    # Only the creator can cancel a pending settlement.
+                    if status == "pending" and permissions["can_cancel"]:
                         st.divider()
 
                         if st.button(
