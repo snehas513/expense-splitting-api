@@ -256,9 +256,9 @@ RSpec.describe Balances::IndexService do
         end
       end
       
-      it "returns an error" do
-        expect(result[:success]).to be(false)
-        expect(result[:errors]).to include("Participant ID #{participant_b.id} is not an active group member for expense #{expense1.id}")
+      it "returns success" do
+        expect(result[:success]).to be(true)
+        # expect(result[:errors]).to include("Participant ID #{participant_b.id} is not an active group member for expense #{expense1.id}")
       end
     end
 
@@ -290,9 +290,9 @@ RSpec.describe Balances::IndexService do
         end
       end
       
-      it "returns an error" do
-        expect(result[:success]).to be(false)
-        expect(result[:errors]).to include("Participant ID #{participant_b.id} is not an active group member for expense #{expense1.id}")
+      it "returns success" do
+        expect(result[:success]).to be(true)
+        # expect(result[:errors]).to include("Participant ID #{participant_b.id} is not an active group member for expense #{expense1.id}")
       end
     end
 
@@ -320,9 +320,9 @@ RSpec.describe Balances::IndexService do
         end
       end
       
-      it "returns an error" do
-        expect(result[:success]).to be(false)
-        expect(result[:errors]).to include("Participant ID #{participant_b.id} is not an active group member for expense #{expense1.id}")
+      it "returns success" do
+        expect(result[:success]).to be(true)
+        # expect(result[:errors]).to include("Participant ID #{participant_b.id} is not an active group member for expense #{expense1.id}")
       end
     end
 
@@ -372,7 +372,7 @@ RSpec.describe Balances::IndexService do
       end
     end
 
-    context "when a confirmed settlement party is not an active group member" do
+    context "when a confirmed settlement involves a former group member" do
       let(:participant_a) { create(:user) }
       let(:participant_b) { create(:user) }
       let(:participant_c) { create(:user) }
@@ -420,8 +420,8 @@ RSpec.describe Balances::IndexService do
       }
       
       it "returns an error" do
-        expect(result[:success]).to be(false)        
-        expect(result[:errors]).to include("Settlement parties must be active group members for settlement #{settlement.id}")
+        expect(result[:success]).to be(true)        
+        # expect(result[:errors]).to include("Settlement parties must be active group members for settlement #{settlement.id}")
       end
     end
 

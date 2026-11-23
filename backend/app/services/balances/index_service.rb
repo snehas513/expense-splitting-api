@@ -20,6 +20,16 @@ module Balances
 
     def calculate_balances
       balances = {}
+
+      historical_participant_ids = group.expenses.active
+        .joins(:expense_participants)
+        .distinct
+        .pluck("expense_participants.user_id")
+
+      historical_settlement_party_ids = group.settlements.confirmed
+        .pluck(:sender_id, :receiver_id)
+        .flatten
+
       active_member_ids = Membership.joins(:user)
         .where(
           group_id: group.id,
@@ -28,11 +38,20 @@ module Balances
         )
         .distinct
         .pluck(:user_id) 
-        .to_set
 
-      active_member_ids.each do |id|
+      member_ids = (
+        active_member_ids +
+        historical_participant_ids +
+        historical_settlement_party_ids
+      ).to_set
+
+      member_ids.uniq.each do |id|
         balances[id] = BigDecimal("0")
       end
+
+      # active_member_ids.each do |id|
+      #   balances[id] = BigDecimal("0")
+      # end
 
       group_expenses = group.expenses.active.includes(:expense_participants)
       group_expenses.each do |expense|
@@ -58,12 +77,12 @@ module Balances
 
 
         expense.expense_participants.each do |participant|
-          unless active_member_ids.include?(participant.user_id)
-            return {
-              success: false,
-              errors: ["Participant ID #{participant.user_id} is not an active group member for expense #{expense.id}"]
-            }
-          end
+          # unless active_member_ids.include?(participant.user_id)
+          #   return {
+          #     success: false,
+          #     errors: ["Participant ID #{participant.user_id} is not an active group member for expense #{expense.id}"]
+          #   }
+          # end
 
           if participant.user_id == expense.paid_by_id
             balances[participant.user_id] += expense.amount - participant.share_amount
@@ -76,13 +95,13 @@ module Balances
 
       group_settlements = group.settlements.confirmed
       group_settlements.each do |settlement|
-        unless active_member_ids.include?(settlement.sender_id) &&
-              active_member_ids.include?(settlement.receiver_id)
-          return {
-            success: false,
-            errors: ["Settlement parties must be active group members for settlement #{settlement.id}"]
-          }
-        end
+        # unless active_member_ids.include?(settlement.sender_id) &&
+        #       active_member_ids.include?(settlement.receiver_id)
+        #   return {
+        #     success: false,
+        #     errors: ["Settlement parties must be active group members for settlement #{settlement.id}"]
+        #   }
+        # end
 
         balances[settlement.sender_id] += settlement.settlement_amount
         balances[settlement.receiver_id] -= settlement.settlement_amount

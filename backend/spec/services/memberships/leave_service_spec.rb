@@ -92,34 +92,6 @@ RSpec.describe Memberships::LeaveService do
       end
     end
 
-    context "when there is issue in fetching members' outstanding balances" do
-      let(:participant) { create(:user) }
-      let(:expense) { create(:expense, group: group, payer: user1) }
-
-      let!(:expense_participants) do 
-        [ 
-          create(:expense_participant,
-            expense: expense,
-            user: user1,
-            share_amount: 600
-          ),
-
-          create(:expense_participant,
-            expense: expense,
-            user: participant,
-            share_amount: 600
-          )
-        ]
-      end
-
-      it "returns an error" do
-        expect(result[:success]).to be(false)
-        expect(result[:errors]).to include(
-          "Unable to verify user's outstanding balance"
-        )
-      end
-    end
-
     context "when balance calculation failed" do
       let!(:user1_membership) { create(:membership, group: group, user: user1) }
 
