@@ -95,8 +95,6 @@ def render(api, group_id, money, show_error):
                     st.error("Every expense allocation must be greater than zero.")
 
                 else:
-                    from decimal import Decimal
-
                     total_amount = sum(
                         (Decimal(str(amount)) for amount in allocation_amounts.values()),
                         Decimal("0.00"),
@@ -184,7 +182,6 @@ def render(api, group_id, money, show_error):
 
                 is_sender = str(current_user_id) == str(sender.get("id"))
                 is_receiver = str(current_user_id) == str(receiver.get("id"))
-                is_creator = str(current_user_id) == str(creator.get("id"))
 
                 with st.expander(
                     f'{sender.get("name", "—")} → '
@@ -267,8 +264,8 @@ def render(api, group_id, money, show_error):
                                 except APIError as exc:
                                     show_error(exc)
 
-                    # Sender or creator can cancel a pending settlement.
-                    if status == "pending" and (is_sender or is_creator):
+                    # Only the sender can cancel a pending settlement.
+                    if status == "pending" and is_sender:
                         st.divider()
 
                         if st.button(

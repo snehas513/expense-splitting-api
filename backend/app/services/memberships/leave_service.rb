@@ -58,6 +58,15 @@ class Memberships::LeaveService
 
     unless balance.zero?
       @errors << "User has outstanding balances to settle"
+      return
+    end
+
+    pending_settlement_exists = group.settlements.pending
+      .where("sender_id = :user_id OR receiver_id = :user_id", user_id: user.id)
+      .exists?
+
+    if pending_settlement_exists
+      @errors << "User has pending settlements to resolve"
     end
   end
 

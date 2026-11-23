@@ -141,6 +141,64 @@ RSpec.describe Memberships::LeaveService do
       end
     end
 
+    context "when the user is the receiver of a pending settlement" do
+      let(:participant) { create(:user) }
+      let!(:user1_membership) { create(:membership, group: group, user: user1) }
+      let!(:participant_membership) { create(:membership, group: group, user: participant) }
+
+      let!(:settlement) { 
+        create(
+          :settlement,
+          group: group,
+          sender: participant,
+          receiver: user1,
+          creator: participant,
+          settlement_amount: 200,
+          status: "pending"
+        )
+      }
+
+      let(:result) {
+        described_class.new(
+          group: group,
+          user: participant
+        ).call
+      }
+      it "returns an error" do
+        expect(result[:success]).to be(false)
+        expect(result[:errors]).to include(
+          "User has pending settlements to resolve"
+        )
+        expect(participant_membership.reload.status).to eq("active")
+      end
+    end
+
+    context "when the user has pending settlements to resolve" do
+      let(:participant) { create(:user) }
+      let!(:user1_membership) { create(:membership, group: group, user: user1) }
+      let!(:participant_membership) { create(:membership, group: group, user: participant) }
+
+      let!(:settlement) { 
+        create(
+          :settlement,
+          group: group,
+          sender: user1,
+          receiver: participant,
+          creator: user1,
+          settlement_amount: 200,
+          status: "pending"
+        )
+      }
+
+      it "returns an error" do
+        expect(result[:success]).to be(false)
+        expect(result[:errors]).to include(
+          "User has pending settlements to resolve"
+        )
+        expect(user1_membership.reload.status).to eq("active")
+      end
+    end
+
     context "when group must have at least one active admin" do
       let!(:memberships) do
         default_members = create_list(:membership, 5, group: group, role: "member")

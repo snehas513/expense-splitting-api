@@ -67,6 +67,7 @@ def render(api, group_id, money, show_error):
                             st.rerun()
                         except APIError as exc:
                             show_error(exc)
+
                 else:
                     st.info("No users available to invite.")
 
@@ -75,10 +76,16 @@ def render(api, group_id, money, show_error):
 
     st.markdown("#### Group members")
 
-    if memberships:
+    active_memberships = [
+        membership
+        for membership in memberships
+        if membership.get("status") == "active"
+    ]
+
+    if active_memberships:
         rows = []
 
-        for membership in memberships:
+        for membership in active_memberships:
             member_user = membership.get("user") or {}
 
             rows.append({
@@ -92,4 +99,4 @@ def render(api, group_id, money, show_error):
 
         st.dataframe(rows, use_container_width=True, hide_index=True)
     else:
-        st.info("No memberships found.")
+        st.info("No active group members found.")
