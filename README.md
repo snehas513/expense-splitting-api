@@ -1,6 +1,6 @@
 # Expense Splitting API
 
-A RESTful expense-splitting application with a Ruby on Rails backend and Streamlit frontend for managing shared expenses, group balances, and settlements.
+A RESTful expense-splitting application built with a Ruby on Rails backend and Streamlit frontend for managing shared expenses, group balances, and settlements.
 
 ## Overview
 
@@ -19,16 +19,18 @@ The application provides:
 
 ## Tech Stack
 
-- **Backend:** Ruby on Rails (API mode)
-- **Language:** Ruby
-- **Database:** MySQL 8.4
-- **Authentication:** JWT
-- **Frontend:** Streamlit
-- **Frontend Language:** Python
-- **Containerization:** Docker and Docker Compose
-- **Backend Testing:** RSpec
-- **Frontend Testing:** Pytest and Streamlit AppTest
-- **API:** REST
+| Component | Technology |
+|---|---|
+| Backend | Ruby on Rails (API mode) |
+| Language | Ruby |
+| Database | MySQL 8.4 |
+| Authentication | JWT |
+| Frontend | Streamlit |
+| Frontend Language | Python |
+| Containerization | Docker and Docker Compose |
+| Backend Testing | RSpec |
+| Frontend Testing | Pytest and Streamlit AppTest |
+| API | REST |
 
 ## Project Structure
 
@@ -118,6 +120,10 @@ expense-splitting-api/
 - **Concurrency handling:** Uses group-level locking to protect settlement allocation operations from concurrent requests.
 - **Backend-owned financial calculations:** Keeps balance and settlement calculations in the Rails backend rather than duplicating financial logic in the frontend.
 - **Automated testing:** Uses RSpec for backend model, service, and API request specifications, and Pytest with Streamlit AppTest for frontend testing.
+
+## API Documentation
+
+Detailed API documentation, including available endpoints, request parameters, response examples, and business rules, is available in [docs/API.md](docs/API.md).
 
 ## Getting Started
 
@@ -244,9 +250,9 @@ Registration verification and email-change verification emails are implemented. 
 
 ## Future Development
 
-Planned next steps include:
+Potential next steps include:
 
-- Dedicated API documentation.
 - Deployment and hosting configuration.
 - Production environment setup.
 - Deployment documentation.
+- Additional automated tests and edge-case coverage.
