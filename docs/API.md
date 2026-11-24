@@ -424,11 +424,12 @@ Creates a group.
 ```json
 {
   "success": true,
-  "group": {}
+  "group": {
+    "id": 1,
+    "name": "Trip to Goa"
+  }
 }
 ```
-
-The `group` object uses ActiveRecord serialization. Its exact fields depend on the model attributes.
 
 **Business rules**
 - The group is created with `active` status.
@@ -466,7 +467,10 @@ Returns group details.
 ```json
 {
   "success": true,
-  "group": {}
+  "group": {
+    "id": 1,
+    "name": "Trip to Goa"
+  }
 }
 ```
 
@@ -496,7 +500,10 @@ Updates group details.
 ```json
 {
   "success": true,
-  "group": {}
+  "group": {
+    "id": 1,
+    "name": "Updated Trip Name"
+  }
 }
 ```
 
@@ -524,7 +531,10 @@ Archives a group.
 ```json
 {
   "success": true,
-  "group": {}
+  "group": {
+    "id": 1,
+    "name": "Trip to Goa"
+  }
 }
 ```
 
@@ -601,7 +611,18 @@ Lists group memberships.
 ```json
 {
   "success": true,
-  "group_memberships": []
+  "group_memberships": [
+    {
+      "id": 10,
+      "user": {
+        "id": 2,
+        "name": "Jane Doe",
+        "email": "jane@example.com"
+      },
+      "role": "member",
+      "status": "active"
+    }
+  ]
 }
 ```
 
@@ -622,7 +643,16 @@ Allows the authenticated user to leave a group.
 ```json
 {
   "success": true,
-  "membership": {}
+  "membership": {
+    "id": 10,
+    "user": {
+      "id": 2,
+      "name": "Jane Doe",
+      "email": "jane@example.com"
+    },
+    "role": "member",
+    "status": "inactive"
+  }
 }
 ```
 
@@ -656,7 +686,16 @@ Removes a member from the group.
 ```json
 {
   "success": true,
-  "membership": {}
+  "membership": {
+    "id": 10,
+    "user": {
+      "id": 2,
+      "name": "Jane Doe",
+      "email": "jane@example.com"
+    },
+    "role": "member",
+    "status": "inactive"
+  }
 }
 ```
 
@@ -700,7 +739,16 @@ Allowed roles:
 ```json
 {
   "success": true,
-  "membership": {}
+  "membership": {
+    "id": 10,
+    "user": {
+      "id": 2,
+      "name": "Jane Doe",
+      "email": "jane@example.com"
+    },
+    "role": "admin",
+    "status": "active"
+  }
 }
 ```
 
@@ -745,7 +793,27 @@ Invites a user to join a group.
 ```json
 {
   "success": true,
-  "invitation": {}
+  "invitation": {
+    "id": 20,
+    "group": {
+      "id": 1,
+      "name": "Trip to Goa"
+    },
+    "invited_user": {
+      "id": 5,
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "invited_by": {
+      "id": 2,
+      "name": "Jane Doe",
+      "email": "jane@example.com"
+    },
+    "status": "pending",
+    "sent_at": "2026-11-24T10:00:00Z",
+    "responded_at": null,
+    "revoked_at": null
+  }
 }
 ```
 
@@ -783,7 +851,27 @@ Accepts a group invitation.
 ```json
 {
   "success": true,
-  "invitation": {}
+  "invitation": {
+    "id": 20,
+    "group": {
+      "id": 1,
+      "name": "Trip to Goa"
+    },
+    "invited_user": {
+      "id": 5,
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "invited_by": {
+      "id": 2,
+      "name": "Jane Doe",
+      "email": "jane@example.com"
+    },
+    "status": "accepted",
+    "sent_at": "2026-11-24T10:00:00Z",
+    "responded_at": "2026-11-24T11:00:00Z",
+    "revoked_at": null
+  }
 }
 ```
 
@@ -820,7 +908,27 @@ Rejects a group invitation.
 ```json
 {
   "success": true,
-  "invitation": {}
+  "invitation": {
+    "id": 20,
+    "group": {
+      "id": 1,
+      "name": "Trip to Goa"
+    },
+    "invited_user": {
+      "id": 5,
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "invited_by": {
+      "id": 2,
+      "name": "Jane Doe",
+      "email": "jane@example.com"
+    },
+    "status": "rejected",
+    "sent_at": "2026-11-24T10:00:00Z",
+    "responded_at": "2026-11-24T11:00:00Z",
+    "revoked_at": null
+  }
 }
 ```
 
@@ -836,7 +944,8 @@ Rejects a group invitation.
 
 **Failure — 422 Unprocessable Entity**
 
-Uses the same invitation and user validation errors as the accept endpoint.
+Uses the same invitation and user validation errors as the accept
+endpoint.
 
 ## GET /groups/:group_id/invitations
 
@@ -847,7 +956,29 @@ Lists pending invitations for a group.
 ```json
 {
   "success": true,
-  "invitations": []
+  "invitations": [
+    {
+      "id": 20,
+      "group": {
+        "id": 1,
+        "name": "Trip to Goa"
+      },
+      "invited_user": {
+        "id": 2,
+        "name": "Jane Doe",
+        "email": "jane@example.com"
+      },
+      "invited_by": {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      "status": "pending",
+      "sent_at": "2026-11-24T10:00:00Z",
+      "responded_at": null,
+      "revoked_at": null
+    }
+  ]
 }
 ```
 
@@ -872,7 +1003,29 @@ Lists pending invitations received by the authenticated user.
 ```json
 {
   "success": true,
-  "invitations": []
+  "invitations": [
+    {
+      "id": 20,
+      "group": {
+        "id": 1,
+        "name": "Trip to Goa"
+      },
+      "invited_user": {
+        "id": 2,
+        "name": "Jane Doe",
+        "email": "jane@example.com"
+      },
+      "invited_by": {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      "status": "pending",
+      "sent_at": "2026-11-24T10:00:00Z",
+      "responded_at": null,
+      "revoked_at": null
+    }
+  ]
 }
 ```
 
@@ -898,7 +1051,27 @@ Revokes a pending invitation.
 ```json
 {
   "success": true,
-  "invitation": {}
+  "invitation": {
+    "id": 20,
+    "group": {
+      "id": 1,
+      "name": "Trip to Goa"
+    },
+    "invited_user": {
+      "id": 5,
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "invited_by": {
+      "id": 2,
+      "name": "Jane Doe",
+      "email": "jane@example.com"
+    },
+    "status": "revoked",
+    "sent_at": "2026-11-24T10:00:00Z",
+    "responded_at": null,
+    "revoked_at": "2026-11-24T11:00:00Z"
+  }
 }
 ```
 
@@ -949,11 +1122,62 @@ Creates an expense in a group.
 ```json
 {
   "success": true,
-  "expense": {}
+  "expense": {
+    "id": 12,
+    "group": {
+      "id": 1,
+      "name": "Trip to Goa"
+    },
+    "amount": "1000.00",
+    "description": "Dinner",
+    "expense_date": "2026-11-24",
+    "payer": {
+      "id": 2,
+      "name": "Jane Doe",
+      "email": "jane@example.com"
+    },
+    "creator": {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "participants": [
+      {
+        "id": 31,
+        "user": {
+          "id": 1,
+          "name": "John Doe",
+          "email": "john@example.com"
+        },
+        "share_amount": "333.34"
+      },
+      {
+        "id": 32,
+        "user": {
+          "id": 2,
+          "name": "Jane Doe",
+          "email": "jane@example.com"
+        },
+        "share_amount": "333.33"
+      },
+      {
+        "id": 33,
+        "user": {
+          "id": 3,
+          "name": "Alex Smith",
+          "email": "alex@example.com"
+        },
+        "share_amount": "333.33"
+      }
+    ]
+  }
 }
 ```
 
-The expense object uses ActiveRecord serialization. Its exact fields depend on the model attributes.
+The expense object is serialized by `Expense#as_json`. It includes the
+associated group, payer, creator, and participant records. Each
+participant includes its associated user and formatted share amount.
+The optional request `note` is not included in this serialization.
 
 **Business rules**
 - Group must be valid.
@@ -1090,9 +1314,110 @@ Returns the financial breakdown between the authenticated user and another group
 {
   "success": true,
   "breakdown": {
-    "outstanding_debt": "<amount>",
-    "user_owes_member": [],
-    "member_owes_user": []
+    "outstanding_debt": "100.00",
+    "user_owes_member": [
+      {
+        "expense": {
+          "id": 12,
+          "group": {
+            "id": 1,
+            "name": "Trip to Goa"
+          },
+          "amount": "1000.00",
+          "description": "Dinner",
+          "expense_date": "2026-11-24",
+          "payer": {
+            "id": 2,
+            "name": "Jane Doe",
+            "email": "jane@example.com"
+          },
+          "creator": {
+            "id": 1,
+            "name": "John Doe",
+            "email": "john@example.com"
+          },
+          "participants": [
+            {
+              "id": 31,
+              "user": {
+                "id": 1,
+                "name": "John Doe",
+                "email": "john@example.com"
+              },
+              "share_amount": "333.34"
+            },
+            {
+              "id": 32,
+              "user": {
+                "id": 2,
+                "name": "Jane Doe",
+                "email": "jane@example.com"
+              },
+              "share_amount": "333.33"
+            },
+            {
+              "id": 33,
+              "user": {
+                "id": 3,
+                "name": "Alex Smith",
+                "email": "alex@example.com"
+              },
+              "share_amount": "333.33"
+            }
+          ]
+        },
+        "share_amount": "333.34",
+        "allocated_amount": "133.34",
+        "remaining_amount": "200.00"
+      }
+    ],
+    "member_owes_user": [
+      {
+        "expense": {
+          "id": 15,
+          "group": {
+            "id": 1,
+            "name": "Trip to Goa"
+          },
+          "amount": "500.00",
+          "description": "Taxi",
+          "expense_date": "2026-11-24",
+          "payer": {
+            "id": 1,
+            "name": "John Doe",
+            "email": "john@example.com"
+          },
+          "creator": {
+            "id": 1,
+            "name": "John Doe",
+            "email": "john@example.com"
+          },
+          "participants": [
+            {
+              "id": 34,
+              "user": {
+                "id": 1,
+                "name": "John Doe",
+                "email": "john@example.com"
+              },
+              "share_amount": "250.00"
+            },
+            {
+              "id": 35,
+              "user": {
+                "id": 2,
+                "name": "Jane Doe",
+                "email": "jane@example.com"
+              },
+              "share_amount": "250.00"
+            }
+          ]
+        },
+        "share_amount": "250.00",
+        "allocated_amount": "150.00",
+        "remaining_amount": "100.00"
+      }
+    ]
   }
 }
 ```
@@ -1101,7 +1426,55 @@ Each expense entry in the two directional lists contains:
 
 ```json
 {
-  "expense": {},
+  "expense": {
+    "id": 12,
+    "group": {
+      "id": 1,
+      "name": "Trip to Goa"
+    },
+    "amount": "1000.00",
+    "description": "Dinner",
+    "expense_date": "2026-11-24",
+    "payer": {
+      "id": 2,
+      "name": "Jane Doe",
+      "email": "jane@example.com"
+    },
+    "creator": {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "participants": [
+      {
+        "id": 31,
+        "user": {
+          "id": 1,
+          "name": "John Doe",
+          "email": "john@example.com"
+        },
+        "share_amount": "333.34"
+      },
+      {
+        "id": 32,
+        "user": {
+          "id": 2,
+          "name": "Jane Doe",
+          "email": "jane@example.com"
+        },
+        "share_amount": "333.33"
+      },
+      {
+        "id": 33,
+        "user": {
+          "id": 3,
+          "name": "Alex Smith",
+          "email": "alex@example.com"
+        },
+        "share_amount": "333.33"
+      }
+    ]
+  },
   "share_amount": "<amount>",
   "allocated_amount": "<amount>",
   "remaining_amount": "<amount>"
@@ -1175,7 +1548,33 @@ Creates a settlement request between two group members.
 ```json
 {
   "success": true,
-  "settlement": {}
+  "settlement": {
+    "id": 40,
+    "group": {
+      "id": 1,
+      "name": "Trip to Goa"
+    },
+    "sender": {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "receiver": {
+      "id": 2,
+      "name": "Jane Doe",
+      "email": "jane@example.com"
+    },
+    "creator": {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "settlement_amount": "500.00",
+    "status": "pending",
+    "settlement_date": "2026-11-24",
+    "note": "Partial payment",
+    "acted_by": null
+  }
 }
 ```
 
@@ -1235,7 +1634,37 @@ Confirms a pending settlement.
 ```json
 {
   "success": true,
-  "settlement": {}
+  "settlement": {
+    "id": 40,
+    "group": {
+      "id": 1,
+      "name": "Trip to Goa"
+    },
+    "sender": {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "receiver": {
+      "id": 2,
+      "name": "Jane Doe",
+      "email": "jane@example.com"
+    },
+    "creator": {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "settlement_amount": "500.00",
+    "status": "confirmed",
+    "settlement_date": "2026-11-24",
+    "note": "Partial payment",
+    "acted_by": {
+      "id": 2,
+      "name": "Jane Doe",
+      "email": "jane@example.com"
+    }
+  }
 }
 ```
 
@@ -1265,7 +1694,37 @@ Rejects a pending settlement.
 ```json
 {
   "success": true,
-  "settlement": {}
+  "settlement": {
+    "id": 40,
+    "group": {
+      "id": 1,
+      "name": "Trip to Goa"
+    },
+    "sender": {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "receiver": {
+      "id": 2,
+      "name": "Jane Doe",
+      "email": "jane@example.com"
+    },
+    "creator": {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "settlement_amount": "500.00",
+    "status": "rejected",
+    "settlement_date": "2026-11-24",
+    "note": "Partial payment",
+    "acted_by": {
+      "id": 2,
+      "name": "Jane Doe",
+      "email": "jane@example.com"
+    }
+  }
 }
 ```
 
@@ -1295,7 +1754,37 @@ Cancels a pending settlement.
 ```json
 {
   "success": true,
-  "settlement": {}
+  "settlement": {
+    "id": 40,
+    "group": {
+      "id": 1,
+      "name": "Trip to Goa"
+    },
+    "sender": {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "receiver": {
+      "id": 2,
+      "name": "Jane Doe",
+      "email": "jane@example.com"
+    },
+    "creator": {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    "settlement_amount": "500.00",
+    "status": "cancelled",
+    "settlement_date": "2026-11-24",
+    "note": "Partial payment",
+    "acted_by": {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com"
+    }
+  }
 }
 ```
 
@@ -1345,9 +1834,37 @@ GET /groups/1/settlements?status=pending&limit=10
 ```json
 {
   "success": true,
-  "settlements": [],
+  "settlements": [
+    {
+      "id": 35,
+      "group": {
+        "id": 1,
+        "name": "Trip to Goa"
+      },
+      "sender": {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      "receiver": {
+        "id": 2,
+        "name": "Jane Doe",
+        "email": "jane@example.com"
+      },
+      "creator": {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      "settlement_amount": "500.00",
+      "status": "pending",
+      "settlement_date": "2026-11-24",
+      "note": "Dinner and taxi",
+      "acted_by": null
+    }
+  ],
   "pagination": {
-    "next_cursor": "<next_cursor>",
+    "next_cursor": null,
     "has_more": false
   }
 }
@@ -1386,7 +1903,15 @@ Lists unread notifications for the authenticated user.
 ```json
 {
   "success": true,
-  "notifications": []
+  "notifications": [
+    {
+      "id": 50,
+      "notification_type": "settlement_request",
+      "message": "You have received a settlement request.",
+      "read": false,
+      "created_at": "2026-11-24T10:00:00Z"
+    }
+  ]
 }
 ```
 
@@ -1406,7 +1931,13 @@ Marks a notification as read.
 ```json
 {
   "success": true,
-  "notification": {}
+  "notification": {
+    "id": 50,
+    "notification_type": "settlement_request",
+    "message": "You have received a settlement request.",
+    "read": false,
+    "created_at": "2026-11-24T10:00:00Z"
+  }
 }
 ```
 
@@ -1534,4 +2065,9 @@ All paths below are relative to `/api/v1`.
 - Email changes require a separate verification process.
 - Account reactivation is not exposed through the current public API.
 
-**Response examples:** Empty objects and arrays are used where the exact ActiveRecord serialization or serializer output was not verified. Confirm those structures against live API responses before treating them as fixed response contracts.
+**Serialization note:** The group balance index is serialized by
+`Balances::Serializer`. Its exact response structure has not yet been
+verified against the implementation or a live API response.
+
+All example IDs, names, amounts, and timestamps throughout this document
+are illustrative.
