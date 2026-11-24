@@ -17,6 +17,12 @@ The application provides:
 - Notifications for group invitations and settlement activities.
 - A Streamlit frontend integrated with the Rails API.
 
+## Screenshots
+
+### Dashboard
+
+![Expense Splitter Dashboard](docs/screenshots/dashboard.png)
+
 ## Tech Stack
 
 | Component | Technology |
